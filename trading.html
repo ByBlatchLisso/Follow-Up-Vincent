@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trading Test 90J — Vincent</title>
+<style>
+:root{
+  --bg:#0d0d0d; --surface:#1a1a19; --surface2:#222221; --surface3:#2a2a28;
+  --ink:#ffffff; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --baseline:#383835; --border:rgba(255,255,255,.10);
+  --blue:#3987e5; --blue-soft:rgba(57,135,229,.14);
+  --good:#0ca30c; --good-soft:rgba(12,163,12,.12);
+  --warn:#fab219; --warn-soft:rgba(250,178,25,.12);
+  --serious:#ec835a; --crit:#d03b3b; --crit-soft:rgba(208,59,59,.14);
+  --red-div:#e66767;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.5;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:13px;background:var(--surface2);color:var(--ink);border:1px solid var(--border);border-radius:8px;padding:8px 10px;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);outline-offset:0;border-color:transparent}
+input[type=checkbox]{width:auto;accent-color:var(--blue)}
+label{font-size:12px;color:var(--ink2);display:block;margin-bottom:4px}
+h1{font-size:17px;font-weight:700}
+h2{font-size:15px;font-weight:700;margin-bottom:12px}
+h3{font-size:13px;font-weight:600;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+
+/* ---------- header ---------- */
+header{position:sticky;top:0;z-index:50;background:rgba(13,13,13,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:10px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.badge{font-size:11px;font-weight:700;letter-spacing:.06em;padding:3px 10px;border-radius:99px;text-transform:uppercase}
+.badge-demo{background:var(--blue-soft);color:var(--blue);border:1px solid var(--blue)}
+.badge-day{background:var(--surface2);color:var(--ink2);border:1px solid var(--border)}
+.hdr-balance{margin-left:auto;text-align:right}
+.hdr-balance .v{font-size:19px;font-weight:700}
+.hdr-balance .l{font-size:11px;color:var(--muted)}
+.dirty-pill{font-size:11px;padding:3px 10px;border-radius:99px;background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn);display:none}
+.dirty-pill.show{display:inline-block}
+
+/* ---------- nav ---------- */
+nav{display:flex;gap:2px;padding:0 12px;background:var(--bg);border-bottom:1px solid var(--border);overflow-x:auto;position:sticky;top:53px;z-index:49}
+nav button{background:none;border:none;color:var(--muted);font-size:13px;font-weight:600;padding:11px 14px;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.active{color:var(--ink);border-bottom-color:var(--blue)}
+nav button:hover{color:var(--ink2)}
+
+main{max-width:1180px;margin:0 auto;padding:18px}
+.tab{display:none}
+.tab.active{display:block}
+
+/* ---------- cards & tiles ---------- */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+.tile .l{font-size:11px;color:var(--muted);margin-bottom:2px}
+.tile .v{font-size:20px;font-weight:700}
+.tile .s{font-size:11px;color:var(--ink2)}
+.pos{color:var(--good)} .neg{color:var(--red-div)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:820px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* ---------- banners ---------- */
+.banner{border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;font-size:13px;border:1px solid}
+.banner.crit{background:var(--crit-soft);border-color:var(--crit);color:#ffb0b0}
+.banner.warn{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.banner.good{background:var(--good-soft);border-color:var(--good);color:#7ed67e}
+.banner.info{background:var(--blue-soft);border-color:var(--blue);color:#9cc4f2}
+.banner b{color:inherit}
+
+/* ---------- tables ---------- */
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.03em;text-align:left;padding:7px 9px;border-bottom:1px solid var(--baseline);white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--grid);white-space:nowrap;font-variant-numeric:tabular-nums}
+tr:hover td{background:var(--surface2)}
+.num{text-align:right}
+th.num{text-align:right}
+
+/* ---------- forms ---------- */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.btn{border:none;border-radius:9px;padding:10px 18px;font-size:13.5px;font-weight:600}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#2a78d6}
+.btn-primary:disabled{background:var(--surface3);color:var(--muted);cursor:not-allowed}
+.btn-ghost{background:var(--surface2);color:var(--ink2);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--ink)}
+.btn-danger{background:var(--crit-soft);color:#ffb0b0;border:1px solid var(--crit)}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--ink2);border-radius:8px;padding:8px 4px;font-size:12.5px;font-weight:600}
+.seg button.on{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+.calc-panel{background:var(--surface2);border-radius:10px;padding:14px;font-size:13px}
+.calc-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--grid)}
+.calc-row:last-child{border-bottom:none}
+.calc-row .k{color:var(--ink2)}
+.calc-row .v{font-weight:600;font-variant-numeric:tabular-nums}
+
+/* ---------- charts ---------- */
+.chart-box{position:relative}
+.chart-tip{position:absolute;pointer-events:none;background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;display:none;z-index:10;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+svg text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.empty{color:var(--muted);text-align:center;padding:36px 12px;font-size:13px}
+
+/* ---------- guide ---------- */
+details{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;background:var(--surface)}
+summary{cursor:pointer;padding:13px 16px;font-weight:600;font-size:13.5px;list-style:none;display:flex;align-items:center;gap:10px}
+summary::before{content:"▸";color:var(--blue);transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+details .body{padding:2px 18px 16px 18px;color:var(--ink2);font-size:13px}
+details .body p{margin-bottom:8px}
+details .body ul{margin:0 0 8px 18px}
+details .body li{margin-bottom:5px}
+details .body b{color:var(--ink)}
+.rule-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--blue-soft);color:var(--blue);font-size:12px;font-weight:700;flex-shrink:0}
+.check-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--grid);font-size:13px;color:var(--ink2)}
+.check-item input{margin-top:3px}
+kbd{background:var(--surface3);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:11.5px}
+
+/* verdict */
+.verdict{border-radius:var(--radius);padding:18px;font-size:14px;font-weight:600;border:1px solid;margin-bottom:16px}
+.verdict.go{background:var(--good-soft);border-color:var(--good);color:#7ed67e}
+.verdict.cont{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.verdict.stop{background:var(--crit-soft);border-color:var(--crit);color:#ffb0b0}
+.st-ok{color:var(--good);font-weight:700}
+.st-ko{color:var(--red-div);font-weight:700}
+.lock{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:700}
+.lock.ko{background:var(--crit-soft);color:#ffb0b0;border:1px solid var(--crit)}
+.lock.ok{background:var(--good-soft);color:#7ed67e;border:1px solid var(--good)}
+.muted{color:var(--muted);font-size:12px}
+.mini{font-size:11.5px;color:var(--muted)}
+hr{border:none;border-top:1px solid var(--grid);margin:14px 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Trading Test 90J</h1>
+  <span class="badge badge-demo" id="modeBadge" style="background:var(--crit-soft);color:#ffb0b0;border-color:var(--crit)">RÉEL</span>
+  <span class="badge badge-day" id="dayBadge">—</span>
+  <span class="dirty-pill" id="dirtyPill">⚠ Données non exportées</span>
+  <div class="hdr-balance">
+    <div class="v" id="hdrBalance">—</div>
+    <div class="l" id="hdrBalanceSub">solde</div>
+  </div>
+</header>
+
+<nav id="nav">
+  <button data-tab="dash" class="active">Dashboard</button>
+  <button data-tab="calc">Calculateur</button>
+  <button data-tab="new">+ Nouveau trade</button>
+  <button data-tab="journal">Journal</button>
+  <button data-tab="week">Semaine</button>
+  <button data-tab="review">Revue</button>
+  <button data-tab="grid">Grille 90 jours</button>
+  <button data-tab="guide">Guide A→Z</button>
+  <button data-tab="settings">Paramètres</button>
+  <button data-tab="data">Sauvegarde</button>
+</nav>
+
+<main>
+
+<!-- ======================= DASHBOARD ======================= -->
+<section class="tab active" id="tab-dash">
+  <div id="sessionBar"></div>
+  <div id="dailyBanner"></div>
+  <div id="goldBanner"></div>
+  <div id="openRiskBanner"></div>
+  <div id="prepCard"></div>
+  <div class="tiles" id="kpiTiles"></div>
+  <div class="card" id="openPosDashCard" style="display:none">
+    <h2>Positions ouvertes <span class="mini" id="openPosCount"></span></h2>
+    <div class="tbl-wrap"><table id="openPosTable"></table></div>
+  </div>
+  <div class="grid2">
+    <div class="card chart-box">
+      <h2>Courbe de capital (€) <span class="mini">— trades clôturés uniquement</span></h2>
+      <div id="equityChart"></div>
+      <div class="chart-tip" id="equityTip"></div>
+    </div>
+    <div class="card chart-box">
+      <h2>Distribution des résultats (R)</h2>
+      <div id="rHist"></div>
+      <div class="chart-tip" id="histTip"></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h2>Par instrument</h2>
+      <div class="tbl-wrap"><table id="instTable"></table></div>
+    </div>
+    <div class="card">
+      <h2>Par source de signal</h2>
+      <p class="mini" style="margin-bottom:8px">C'est ici que tu jugeras tes 2 vendeurs de signaux — sur les chiffres, pas sur leurs captures d'écran.</p>
+      <div class="tbl-wrap"><table id="srcTable"></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= CALCULATEUR ======================= -->
+<section class="tab" id="tab-calc">
+  <div class="banner info" style="margin-bottom:16px"><b>Avant chaque trade :</b> tu entres ton entrée et ton stop, le calculateur te donne le lot exact à prendre pour respecter ton risque — puis tu copies le plan d'ordre dans MT5. Zéro calcul mental.</div>
+  <div class="grid2">
+    <div class="card">
+      <h2>Ton trade</h2>
+      <div class="form-grid">
+        <div><label>Instrument</label><select id="c2-inst"></select></div>
+        <div><label>Sens</label>
+          <div class="seg" id="c2-sens">
+            <button data-v="Achat" class="on">Achat</button>
+            <button data-v="Vente">Vente</button>
+          </div>
+        </div>
+        <div><label>Conviction (fixe ton % de risque)</label>
+          <div class="seg" id="c2-conv">
+            <button data-v="1">1 · 1 %</button>
+            <button data-v="2" class="on">2 · 1,5 %</button>
+            <button data-v="3">3 · 2 %</button>
+          </div>
+        </div>
+        <div><label>Solde (auto — modifiable)</label><input type="number" step="any" id="c2-bal"></div>
+        <div><label>Prix d'entrée</label><input type="number" step="any" id="c2-entry" placeholder="ex : 44 250"></div>
+        <div><label>Stop</label><input type="number" step="any" id="c2-stop" placeholder="ex : 44 200"></div>
+        <div><label>Take-profit</label>
+          <input type="number" step="any" id="c2-tp">
+          <div class="seg" id="c2-tpauto-rr" style="margin-top:6px">
+            <button data-rr="2">TP = RR 2</button>
+            <button data-rr="2.5">RR 2,5</button>
+            <button data-rr="3">RR 3</button>
+            <button data-rr="4">RR 4</button>
+          </div>
+        </div>
+        <div><label>Stop rapide (distance typique)</label>
+          <div class="seg" id="c2-stoppreset">
+            <button data-m="0.5">Serré ×0,5</button>
+            <button data-m="1">Typique ×1</button>
+            <button data-m="1.5">Large ×1,5</button>
+          </div>
+          <p class="mini" style="margin-top:4px">Remplit le stop à partir de l'entrée et de la distance typique de l'instrument.</p>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Résultat</h2>
+      <div id="c2-verdict"></div>
+      <div class="calc-panel" id="c2-out"></div>
+      <div id="c2-plan" style="margin-top:12px"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Ce que ton solde permet aujourd'hui <span class="mini">(au lot minimum, stop typique)</span></h2>
+    <div class="tbl-wrap"><table id="c2-afford"></table></div>
+    <div id="c2-levels"></div>
+  </div>
+</section>
+
+<!-- ======================= NOUVEAU TRADE ======================= -->
+<section class="tab" id="tab-new">
+  <div id="newBanner"></div>
+  <div class="grid2">
+    <div class="card">
+      <h2 id="formTitle">Nouveau trade</h2>
+      <div class="form-grid">
+        <div><label>Date</label><input type="date" id="f-date"></div>
+        <div><label>Heure d'entrée (optionnel)</label><input type="time" id="f-time"></div>
+        <div><label>Instrument</label><select id="f-inst"></select></div>
+        <div><label>Sens</label>
+          <div class="seg" id="f-sens">
+            <button data-v="Achat">Achat</button>
+            <button data-v="Vente">Vente</button>
+          </div>
+        </div>
+        <div><label>Conviction</label>
+          <div class="seg" id="f-conv">
+            <button data-v="1">1 · pas sûr</button>
+            <button data-v="2">2 · sûr</button>
+            <button data-v="3">3 · très sûr</button>
+          </div>
+        </div>
+        <div><label>Prix d'entrée</label><input type="number" step="any" id="f-entry"></div>
+        <div><label>Stop (obligatoire)</label><input type="number" step="any" id="f-stop"></div>
+        <div><label>Take-profit</label><input type="number" step="any" id="f-tp"></div>
+        <div><label>Lot</label><input type="number" step="0.01" id="f-lot"></div>
+        <div><label>Prix de sortie <span class="mini">(vide = position encore ouverte)</span></label><input type="number" step="any" id="f-exit"></div>
+        <div><label>Commission (€)</label><input type="number" step="any" id="f-comm" value="0"></div>
+        <div><label>Source</label><select id="f-source"></select></div>
+        <div><label>Excursion adverse max (prix, optionnel)</label><input type="number" step="any" id="f-mae"></div>
+      </div>
+      <div id="beBox" class="form-grid" style="margin-top:12px;display:none">
+        <div style="display:flex;align-items:flex-end">
+          <label style="display:flex;gap:8px;align-items:center;margin:0">
+            <input type="checkbox" id="f-be"> Stop déplacé au point mort (BE) ou au-delà
+          </label>
+        </div>
+        <div><label>Nouveau stop actuel (si déplacé)</label><input type="number" step="any" id="f-bestop"></div>
+      </div>
+      <div style="margin-top:12px"><label>Notes (setup, contexte, émotion, gestion en cours)</label><textarea id="f-note" rows="2"></textarea></div>
+      <div id="violationBox" style="margin-top:10px;display:none">
+        <label style="display:flex;gap:8px;align-items:center;color:#ffb0b0;font-size:12.5px">
+          <input type="checkbox" id="f-violation"> Je consigne ce trade en <b>violation assumée</b> de mes règles (il sera compté contre ma discipline)
+        </label>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px">
+        <button class="btn btn-primary" id="saveTrade">Enregistrer</button>
+        <button class="btn btn-ghost" id="cancelEdit" style="display:none">Annuler la modification</button>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h2>Calculateur & garde-fous <span class="mini">(en direct)</span></h2>
+        <div class="calc-panel" id="calcPanel"></div>
+      </div>
+      <div class="card" id="openPosCard" style="display:none">
+        <h2>Exposition ouverte actuelle</h2>
+        <div id="openPosPanel"></div>
+      </div>
+      <div class="card">
+        <h2>Checklist pré-trade</h2>
+        <div id="checklist"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= JOURNAL ======================= -->
+<section class="tab" id="tab-journal">
+  <div class="card" id="journalOpenCard" style="display:none">
+    <h2>Positions ouvertes <span class="mini" id="journalOpenCount"></span></h2>
+    <div class="tbl-wrap"><table id="journalOpenTable"></table></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+      <h2 style="margin:0">Journal complet</h2>
+      <select id="filterInst" style="width:auto"><option value="">Tous instruments</option></select>
+      <select id="filterSrc" style="width:auto"><option value="">Toutes sources</option></select>
+      <button class="btn btn-ghost" id="exportCsv" style="margin-left:auto">Exporter CSV</button>
+    </div>
+    <div class="tbl-wrap"><table id="journalTable"></table></div>
+  </div>
+</section>
+
+<!-- ======================= SEMAINE ======================= -->
+<section class="tab" id="tab-week">
+  <div class="banner info"><b>Ta semaine de trading :</b> les news à haut impact et tes niveaux clés, au même endroit. L'app t'alerte automatiquement sur le Dashboard et le formulaire quand une news approche (60 min avant → 30 min après : pas de nouvelle position).</div>
+  <div class="card">
+    <h2>News économiques à venir <span class="mini">(heure de Paris — éditable, sauvegardé dans ton JSON)</span></h2>
+    <div id="eventsList"></div>
+    <button class="btn btn-ghost" id="addEvent" style="margin-top:10px">+ Ajouter une news</button>
+    <p class="mini" style="margin-top:8px">Source pour les mettre à jour chaque dimanche : calendrier économique TradingView ou ForexFactory, filtre « impact élevé », fuseau Paris. Les 3 pré-remplies couvrent la semaine du 27/07 (FOMC mercredi 20h, PIB jeudi 14h30, PCE vendredi 14h30).</p>
+  </div>
+  <div class="card">
+    <h2>Niveaux clés par instrument <span class="mini">(éditables — mets-les à jour après chaque analyse)</span></h2>
+    <div id="levelsList"></div>
+    <p class="mini" style="margin-top:8px">Pré-remplis avec l'analyse du 25/07 (captures TradingView). Ces niveaux vieillissent : refais l'exercice chaque week-end — envoie-moi les nouvelles captures, je te les redonne.</p>
+  </div>
+</section>
+
+<!-- ======================= REVUE ======================= -->
+<section class="tab" id="tab-review">
+  <div class="card">
+    <h2>Par semaine</h2>
+    <div class="tbl-wrap"><table id="revWeeks"></table></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h2>Par jour calendaire</h2>
+      <div class="tbl-wrap"><table id="revDays"></table></div>
+    </div>
+    <div class="card">
+      <h2>Par jour de la semaine</h2>
+      <div class="tbl-wrap"><table id="revDow"></table></div>
+      <hr>
+      <h2>Par heure d'entrée <span class="mini">(si renseignée)</span></h2>
+      <div class="tbl-wrap"><table id="revHour"></table></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h2>Par conviction</h2>
+      <div class="tbl-wrap"><table id="revConv"></table></div>
+      <p class="mini" style="margin-top:8px">Si ta conviction 3 « très sûr » ne gagne pas plus souvent que ta conviction 1, ton ressenti de certitude ne vaut rien statistiquement — et il faut égaliser les tailles. C'est une des choses les plus utiles que ce journal peut t'apprendre.</p>
+    </div>
+    <div class="card">
+      <h2>Par sens</h2>
+      <div class="tbl-wrap"><table id="revSens"></table></div>
+      <p class="mini" style="margin-top:8px">Beaucoup de débutants ne gagnent que dans un sens (souvent l'achat, dans la tendance de fond). Si c'est ton cas, le journal te le montrera ici.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= GRILLE 90 JOURS ======================= -->
+<section class="tab" id="tab-grid">
+  <div class="verdict" id="verdictBox"></div>
+  <div class="card">
+    <h2>Critères GO (tous requis)</h2>
+    <div class="tbl-wrap"><table id="gridTable"></table></div>
+    <p class="mini" style="margin-top:10px">« GO conditionnel » = réel envisageable à taille minimale, pas « fonce ». Le réel sera pire que la démo : slippage sur les stops, exécution dégradée en news, et l'émotion de l'argent réel. C'est pour ça que le seuil est « nettement positif » et pas « au-dessus de zéro ».</p>
+  </div>
+  <div class="card">
+    <h2>Conditions d'arrêt immédiat (STOP avant les 90 jours)</h2>
+    <div class="tbl-wrap"><table id="stopTable"></table></div>
+  </div>
+</section>
+
+<!-- ======================= GUIDE ======================= -->
+<section class="tab" id="tab-guide">
+  <div id="guideContent"></div>
+</section>
+
+<!-- ======================= PARAMÈTRES ======================= -->
+<section class="tab" id="tab-settings">
+  <div class="card">
+    <h2>Compte & test</h2>
+    <div class="form-grid">
+      <div><label>Solde initial (€)</label><input type="number" step="any" id="s-balance"></div>
+      <div><label>Date de début du test</label><input type="date" id="s-start"></div>
+      <div><label>Durée du test (jours)</label><input type="number" id="s-days"></div>
+      <div><label>RR minimum exigé</label><input type="number" step="0.1" id="s-rr"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Risque</h2>
+    <div class="form-grid">
+      <div><label>Conviction 1 — pas sûr (%)</label><input type="number" step="0.1" id="s-t1"></div>
+      <div><label>Conviction 2 — sûr (%)</label><input type="number" step="0.1" id="s-t2"></div>
+      <div><label>Conviction 3 — très sûr (%)</label><input type="number" step="0.1" id="s-t3"></div>
+      <div><label>Plafond absolu par trade (%)</label><input type="number" step="0.1" id="s-cap"></div>
+      <div><label>Perte max journalière (%)</label><input type="number" step="0.1" id="s-daily"></div>
+      <div><label>Risque total ouvert max (%)</label><input type="number" step="0.1" id="s-openrisk"></div>
+      <div><label>Positions ouvertes simultanées max</label><input type="number" step="1" id="s-maxopen"></div>
+    </div>
+    <p class="mini" style="margin-top:8px">« Risque total ouvert » = somme du risque de toutes les positions encore ouvertes en même temps. Deux trades à 1 % chacun, ouverts ensemble = déjà 2 % engagés avant même qu'un troisième existe.</p>
+  </div>
+  <div class="card">
+    <h2>Instruments <span class="mini">— vérifie ces valeurs dans MT5 : appui long sur le symbole → Spécification</span></h2>
+    <div class="tbl-wrap"><table id="instSettings"></table></div>
+    <p class="mini" style="margin-top:8px">« Valeur du point » = € gagnés/perdus quand le prix bouge de 1.0 avec 1.00 lot. C'est LE chiffre qui pilote tout le risque : s'il est faux, tout est faux.</p>
+  </div>
+  <div class="card">
+    <h2>Sources de signaux (2 maximum + toi)</h2>
+    <div class="form-grid">
+      <div><label>Source 1</label><input id="s-src1" placeholder="Moi"></div>
+      <div><label>Source 2 (signal Telegram)</label><input id="s-src2" placeholder="Signal 1"></div>
+      <div><label>Source 3 (signal Telegram)</label><input id="s-src3" placeholder="Signal 2"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Seuils de la grille 90 jours</h2>
+    <div class="form-grid">
+      <div><label>Trades minimum</label><input type="number" id="s-gmin"></div>
+      <div><label>Espérance min (R)</label><input type="number" step="0.01" id="s-gexp"></div>
+      <div><label>Rendement net min (%)</label><input type="number" step="1" id="s-gnet"></div>
+      <div><label>Drawdown max (%)</label><input type="number" step="1" id="s-gdd"></div>
+      <div><label>Facteur de profit min</label><input type="number" step="0.1" id="s-gpf"></div>
+      <div><label>Discipline min (%)</label><input type="number" step="1" id="s-grule"></div>
+    </div>
+  </div>
+  <button class="btn btn-primary" id="saveSettings">Appliquer les paramètres</button>
+</section>
+
+<!-- ======================= SAUVEGARDE ======================= -->
+<section class="tab" id="tab-data">
+  <div class="banner warn"><b>Important :</b> cette application garde tes données en mémoire tant que la page est ouverte. Pour ne rien perdre, <b>exporte la sauvegarde JSON après chaque session</b> et range-la dans ton dossier TRADING. Au prochain lancement, ré-importe-la : tu retrouves tout.</div>
+  <div class="grid3">
+    <div class="card">
+      <h2>Exporter</h2>
+      <p class="mini" style="margin-bottom:10px">Fichier JSON complet : trades + paramètres.</p>
+      <button class="btn btn-primary" id="exportJson" style="width:100%">Télécharger la sauvegarde</button>
+    </div>
+    <div class="card">
+      <h2>Importer</h2>
+      <p class="mini" style="margin-bottom:10px">Recharge une sauvegarde JSON précédente.</p>
+      <input type="file" id="importFile" accept=".json">
+    </div>
+    <div class="card">
+      <h2>Réinitialiser</h2>
+      <p class="mini" style="margin-bottom:10px">Efface tout (trades + paramètres). Irréversible.</p>
+      <button class="btn btn-danger" id="resetAll" style="width:100%">Tout effacer</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Statut</h2>
+    <div id="dataStatus" class="mini"></div>
+  </div>
+</section>
+
+</main>
+<script>
+"use strict";
+/* ================= ÉTAT ================= */
+const DEFAULTS = {
+  startBalance: 100,
+  startDate: "2026-07-27",
+  testDays: 90,
+  tiers: {1:0.010, 2:0.015, 3:0.020},
+  cap: 0.03,
+  dailyLossMax: 0.06,
+  rrMin: 2,
+  sources: ["Moi","GOLDFXCC","Signal 2"],
+  instruments: [
+    {name:"OR (XAUUSD)",     vp:100, lotMin:0.01, lotStep:0.01, spread:0.30, stopTyp:5,   stopMin:0.20},
+    {name:"BTC (BTCUSD)",    vp:1,   lotMin:0.01, lotStep:0.01, spread:20,   stopTyp:400, stopMin:0},
+    {name:"US30 (DJ30)",     vp:1,   lotMin:0.1,  lotStep:0.1,  spread:5.0,  stopTyp:100, stopMin:5},
+    {name:"NASDAQ (NAS100)", vp:1,   lotMin:0.1,  lotStep:0.1,  spread:5.0,  stopTyp:60,  stopMin:50},
+  ],
+  grid: {minTrades:40, expR:0.10, netPct:0.10, ddMax:0.15, pf:1.3, ruleOk:0.90},
+  prep: [false,false,false,false,false,false,false],
+  openRiskMax: 0.04,
+  maxOpen: 2,
+  correlated: [["US30 (DJ30)","NASDAQ (NAS100)"]],
+  events: [
+    {dt:"2026-07-29T20:00", label:"FOMC — décision Fed (conférence 20h30)"},
+    {dt:"2026-07-30T14:30", label:"PIB US T2 (première estimation)"},
+    {dt:"2026-07-31T14:30", label:"Inflation PCE (mesure préférée de la Fed)"},
+    {dt:"2026-08-03T16:00", label:"ISM manufacturier US (juillet)"},
+    {dt:"2026-08-05T14:15", label:"ADP emploi privé US (juillet)"},
+    {dt:"2026-08-07T14:30", label:"NFP — emploi US (le plus gros event mensuel)"},
+  ],
+  levels: {
+    "OR (XAUUSD)":     {sup:"4020-4030 · 4000 (psychologique) · 3960 (plancher majeur — cassure = reprise baissière)", res:"4080 · 4120 · 4160 (plafond du range)"},
+    "BTC (BTCUSD)":    {sup:"à définir — envoie-moi les captures", res:"à définir — envoie-moi les captures"},
+    "US30 (DJ30)":     {sup:"51600-51700 (creux de la semaine, niveau n°1) · 51400 · 51000", res:"52100 (rejet vendredi) · 52400 · 52800"},
+    "NASDAQ (NAS100)": {sup:"à définir — envoie-moi les captures", res:"à définir — envoie-moi les captures"},
+  },
+};
+const PREP_ITEMS = [
+  "Compte réel Vantage (33889089) connecté sur MT5 — solde déposé (100 € mini, 200 € fortement recommandé : voir tableau du Calculateur)",
+  "Je sais placer entrée + stop + TP en un seul ticket MT5, et faire une clôture partielle",
+  "Spécifications vérifiées dans MT5 : XAUUSD ✓ · DJ30 ✓ (lot mini 0,1) · NAS100 ✓ (lot mini 0,1) · BTCUSD → capture à m'envoyer",
+  "Specs reportées dans l'onglet Paramètres (valeur du point, lot min, spread, stop mini broker)",
+  "TradingView prêt + onglet Semaine vérifié (FOMC mer 29 20h00, PIB jeu 30 14h30, PCE ven 31 14h30)",
+  "Premier export JSON fait (onglet Sauvegarde) et rangé dans mon dossier TRADING",
+  "Règles v2 relues (Guide, section C) — plafond 3 %, perte max jour 6 %, RR ≥ 2, BE à +1R",
+];
+let S = JSON.parse(JSON.stringify(DEFAULTS));
+let trades = [];
+let dirty = false;
+let editId = null;
+let formSens = "Achat", formConv = 2;
+
+const $ = id => document.getElementById(id);
+const eur = v => (v==null||isNaN(v)) ? "–" : v.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
+const pct = v => (v==null||isNaN(v)) ? "–" : (v*100).toLocaleString("fr-FR",{minimumFractionDigits:1,maximumFractionDigits:1})+" %";
+const num = (v,d=2) => (v==null||isNaN(v)) ? "–" : v.toLocaleString("fr-FR",{minimumFractionDigits:d,maximumFractionDigits:d});
+const todayStr = () => new Date().toISOString().slice(0,10);
+const esc = s => String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const TR90_KEY="TR90:v1";
+function persist(){ try{ localStorage.setItem(TR90_KEY, JSON.stringify({settings:S, trades:trades})); }catch(e){} }
+function loadSaved(){ try{ const raw=localStorage.getItem(TR90_KEY); if(!raw) return false; const d=JSON.parse(raw); if(d&&d.settings&&Array.isArray(d.trades)){ S=Object.assign(JSON.parse(JSON.stringify(DEFAULTS)), d.settings); trades=d.trades; return true; } }catch(e){} return false; }
+function markDirty(){ dirty=true; $("dirtyPill").classList.add("show"); }
+function clearDirty(){ dirty=false; $("dirtyPill").classList.remove("show"); }
+window.addEventListener("beforeunload", e=>{ if(dirty){ e.preventDefault(); e.returnValue=""; }});
+
+/* ================= CALCULS ================= */
+function computeAll(){
+  const allSorted = [...trades].sort((a,b)=> a.date===b.date ? a.id-b.id : (a.date<b.date?-1:1));
+  const sorted = allSorted.filter(t=>t.exit!=null && t.exit!=="" && !isNaN(t.exit));
+  const openTrades = allSorted.filter(t=>t.exit==null || t.exit==="" || isNaN(t.exit));
+  let bal = S.startBalance, peak = S.startBalance, streak=0, maxStreak=0, maxDD=0, maxDDpct=0;
+  const rows = [];
+  for(const t of sorted){
+    const inst = S.instruments.find(i=>i.name===t.instrument) || {vp:1,lotMin:0.01,spread:0};
+    const dir = t.sens==="Achat" ? 1 : -1;
+    const riskPrice = Math.abs(t.entry - t.stop);
+    const rr = (t.tp!=null && riskPrice>0) ? Math.abs(t.tp - t.entry)/riskPrice : null;
+    const gross = (t.exit - t.entry)*dir*t.lot*inst.vp;
+    const spreadCost = inst.spread*t.lot*inst.vp;
+    const net = gross - spreadCost - (t.comm||0);
+    const riskEUR = riskPrice*t.lot*inst.vp;
+    const balBefore = bal;
+    const allowedEUR = balBefore * (S.tiers[t.conv]||S.cap);
+    const capEUR = balBefore * S.cap;
+    const overCap = riskEUR > capEUR*1.0001;
+    const overTier = riskEUR > allowedEUR*1.0001;
+    const r = riskEUR>0 ? net/riskEUR : 0;
+    bal += net;
+    peak = Math.max(peak, bal);
+    const dd = peak-bal, ddPct = peak>0 ? dd/peak : 0;
+    maxDD = Math.max(maxDD, dd); maxDDpct = Math.max(maxDDpct, ddPct);
+    streak = net<0 ? streak+1 : 0; maxStreak = Math.max(maxStreak, streak);
+    const violation = overCap || t.violation || (rr!=null && rr < S.rrMin - 1e-9);
+    rows.push({...t, inst, riskPrice, rr, gross, spreadCost, net, riskEUR, balBefore, allowedEUR, capEUR, overCap, overTier, r, bal, peak, dd, ddPct, streak, violation});
+  }
+  const n = rows.length;
+  const wins = rows.filter(x=>x.net>0), losses = rows.filter(x=>x.net<0);
+  const netTotal = rows.reduce((a,x)=>a+x.net,0);
+  const grossWin = wins.reduce((a,x)=>a+x.net,0), grossLoss = Math.abs(losses.reduce((a,x)=>a+x.net,0));
+  const stats = {
+    n, wins:wins.length, losses:losses.length,
+    winRate: n? wins.length/n : null,
+    netTotal, netPct: netTotal/S.startBalance,
+    balance: bal,
+    avgWin: wins.length? grossWin/wins.length : null,
+    avgLoss: losses.length? -grossLoss/losses.length : null,
+    expEUR: n? netTotal/n : null,
+    expR: n? rows.reduce((a,x)=>a+x.r,0)/n : null,
+    pf: grossLoss>0 ? grossWin/grossLoss : (grossWin>0? Infinity : null),
+    maxDD, maxDDpct, maxStreak,
+    spreadTotal: rows.reduce((a,x)=>a+x.spreadCost,0),
+    discipline: n? rows.filter(x=>!x.violation).length/n : null,
+    rows
+  };
+  // ---- Positions ouvertes : risque en cours, non résolu ----
+  const openRows = openTrades.map(t=>{
+    const inst = S.instruments.find(i=>i.name===t.instrument) || {vp:1,lotMin:0.01,spread:0};
+    const riskPrice = Math.abs(t.entry - t.stop);
+    const riskEUR = riskPrice*t.lot*inst.vp;
+    const rr = (t.tp!=null && riskPrice>0) ? Math.abs(t.tp - t.entry)/riskPrice : null;
+    return {...t, inst, riskPrice, riskEUR, riskPct: stats.balance>0 ? riskEUR/stats.balance : 0, rr};
+  });
+  stats.openRows = openRows;
+  stats.openCount = openRows.length;
+  stats.openRiskEUR = openRows.reduce((a,x)=>a+x.riskEUR,0);
+  stats.openRiskPct = stats.balance>0 ? stats.openRiskEUR/stats.balance : 0;
+  stats.correlatedOpenClash = (()=>{
+    for(const grp of (S.correlated||[])){
+      const inGrp = openRows.filter(x=>grp.includes(x.instrument));
+      const bySens = {};
+      inGrp.forEach(x=>{ (bySens[x.sens]=bySens[x.sens]||[]).push(x); });
+      for(const k in bySens){ if(bySens[k].length>1) return {sens:k, items:bySens[k], group:grp}; }
+    }
+    return null;
+  })();
+  return stats;
+}
+function dailyNet(st, dateStr){
+  return st.rows.filter(x=>x.date===dateStr).reduce((a,x)=>a+x.net,0);
+}
+function dayStartBalance(st, dateStr){
+  const before = st.rows.filter(x=>x.date<dateStr);
+  return before.length ? before[before.length-1].bal : S.startBalance;
+}
+function dailyStopHit(st, dateStr){
+  const ds = dayStartBalance(st, dateStr);
+  return dailyNet(st, dateStr) <= -S.dailyLossMax*ds + 1e-9 ? {hit:true, ds} : {hit:false, ds};
+}
+function goldStatus(st){
+  const inst = S.instruments[0];
+  const riskMin = inst.lotMin*inst.stopTyp*inst.vp;
+  const balNow = st.balance;
+  const pctMin = riskMin/balNow;
+  const unlockAt = riskMin/S.cap;
+  return {riskMin, pctMin, ok: pctMin <= S.cap, unlockAt, name:inst.name};
+}
+
+/* ================= RENDU GLOBAL ================= */
+function renderAll(){
+  const st = computeAll();
+  renderHeader(st); renderDash(st); renderJournal(st); renderGrid(st);
+  renderNewTradeSide(st); renderCalc(st); renderDataStatus(st); renderCalc2(st);
+  renderWeek(); renderReview(st);
+  persist();
+}
+
+/* ================= SESSION / HORLOGE (heure de Paris) ================= */
+function sessionStatus(){
+  const now = new Date();
+  const day = now.getDay(), h = now.getHours() + now.getMinutes()/60;
+  const t = now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  if(day===0 || day===6) return {t, cls:"warn", msg:"Week-end — OR et indices FERMÉS (réouverture dimanche ~23h00 Paris). Seul BTC cote 24h/24 7j/7, mais liquidité de week-end = spreads élargis + mouvements erratiques + risque de gap à la réouverture. Si BTC quand même : taille minimale, jamais par ennui. Bon moment pour : préparer la semaine, revoir le journal, tracer les niveaux."};
+  if(day===5 && h>=20)   return {t, cls:"warn", msg:"Vendredi après 20h — pas de nouvelle position OR/indices (gaps du dimanche soir traversent les stops). BTC : éviter aussi, le week-end crypto est illiquide."};
+  if(h>=15.5 && h<16)    return {t, cls:"warn", msg:"Ouverture US (15h30) — 30 premières minutes = volatilité maximale et faux mouvements. Les pros attendent souvent 16h00 que le vrai sens se dessine."};
+  if(h>=16 && h<17.5)    return {t, cls:"good", msg:"Fenêtre optimale US (16h00–17h30) pour US30 / NASDAQ / OR — volume plein, tendances les plus propres de la journée."};
+  if(h>=14.5 && h<15.5)  return {t, cls:"info", msg:"Chevauchement Londres/NY (14h30–17h30) — l'OR est dans sa meilleure plage. Ouverture indices US à 15h30. ATTENTION : les news US tombent à 14h30 (NFP, CPI, PIB, PCE) — vérifie l'onglet Semaine avant d'entrer."};
+  if(h>=17.5 && h<20)    return {t, cls:"info", msg:"Session US en cours, après la fenêtre optimale — volume en baisse progressive, sois plus sélectif. 18h00 : fixing de Londres sur l'OR (pic de volatilité bref possible)."};
+  if(h>=20 && h<22)      return {t, cls:"warn", msg:"Après 20h — volume mort sur indices. FOMC possible à 20h00 les jours de Fed (conférence 20h30) : vérifie l'onglet Semaine. Clôture US à 22h00."};
+  if(h>=22 || h<8)       return {t, cls:"warn", msg:"Marché US cash fermé (22h00–15h30). Nuit = session Asie : spreads CFD élargis, faible volume sur tes instruments. Pas une heure pour trader ton plan. BTC cote mais mêmes précautions."};
+  if(h>=8 && h<9)        return {t, cls:"info", msg:"Pré-ouverture Europe — les futures donnent le ton de la nuit. Prépare tes niveaux, ne trade pas encore."};
+  if(h>=9 && h<14.5)     return {t, cls:"info", msg:"Session Europe (ouverture 9h00) — l'OR bouge modérément, les indices US somnolent jusqu'à 14h30. Fenêtre correcte pour l'OR si setup clair, mais ta vraie fenêtre démarre à 14h30-15h30."};
+  return {t, cls:"info", msg:"Prépare tes niveaux — ta fenêtre principale : 14h30 (OR) puis 15h30 (indices US)."};
+}
+function renderSessionBar(){
+  const s = sessionStatus();
+  const el = $("sessionBar");
+  if(el) el.innerHTML = `<div class="banner ${s.cls}" style="display:flex;gap:12px;align-items:baseline"><b style="font-variant-numeric:tabular-nums">${s.t}</b><span>${s.msg}</span></div>`;
+}
+setInterval(renderSessionBar, 30000);
+
+/* ================= NEWS GUARD ================= */
+function newsGuard(){
+  const now = new Date();
+  let best=null;
+  for(const e of (S.events||[])){
+    const d = new Date(e.dt);
+    if(isNaN(d)) continue;
+    const mins = (d - now)/60000; // >0 = à venir
+    if(mins > -30 && mins < 60){ if(!best || Math.abs(mins) < Math.abs(best.mins)) best = {label:e.label, mins, d}; }
+  }
+  return best;
+}
+function newsBannerHTML(){
+  const g = newsGuard();
+  if(!g) return "";
+  const when = g.mins >= 0 ? `dans ${Math.round(g.mins)} min` : `il y a ${Math.round(-g.mins)} min — le marché digère encore`;
+  return `<div class="banner crit"><b>NEWS À HAUT IMPACT ${g.mins>=0?"IMMINENTE":"EN COURS"} :</b> ${esc(g.label)} (${when}). Pas de nouvelle position, et méfie-toi des positions ouvertes : spread écarté, stops avec slippage. Fenêtre interdite : 60 min avant → 30 min après.</div>`;
+}
+function fmtCountdown(d){
+  const mins = Math.round((d - new Date())/60000);
+  if(mins < 0) return "passé";
+  if(mins < 60) return `dans ${mins} min`;
+  const h = Math.floor(mins/60);
+  if(h < 48) return `dans ${h} h ${mins%60} min`;
+  return `dans ${Math.floor(h/24)} j`;
+}
+
+/* ================= SEMAINE (news + niveaux) ================= */
+function renderWeek(){
+  const wrap=$("eventsList"); if(!wrap) return;
+  const evs=(S.events||[]).map((e,i)=>({...e,i})).sort((a,b)=>a.dt<b.dt?-1:1);
+  wrap.innerHTML = evs.length ? evs.map(e=>{
+    const d=new Date(e.dt);
+    return `<div class="check-item" style="align-items:center">
+      <input type="datetime-local" value="${esc(e.dt)}" data-evi="${e.i}" data-evf="dt" style="width:200px;flex:none">
+      <input value="${esc(e.label)}" data-evi="${e.i}" data-evf="label" style="flex:1">
+      <span class="mini" style="white-space:nowrap">${isNaN(d)?"date invalide":fmtCountdown(d)}</span>
+      <button class="btn btn-ghost" data-evdel="${e.i}" style="padding:3px 9px;flex:none">✕</button>
+    </div>`;
+  }).join("") : `<div class="empty">Aucune news planifiée — ajoute celles de la semaine.</div>`;
+  wrap.querySelectorAll("input[data-evi]").forEach(inp=>inp.addEventListener("change",()=>{
+    S.events[+inp.dataset.evi][inp.dataset.evf]=inp.value; markDirty(); renderWeek();
+  }));
+  wrap.querySelectorAll("button[data-evdel]").forEach(b=>b.addEventListener("click",()=>{
+    S.events.splice(+b.dataset.evdel,1); markDirty(); renderWeek();
+  }));
+  const lv=$("levelsList");
+  lv.innerHTML = S.instruments.map((it,k)=>`
+    <div style="margin-bottom:12px">
+      <h3>${esc(it.name)}</h3>
+      <div class="form-grid">
+        <div><label>Supports</label><input value="${esc((S.levels[it.name]||{}).sup||"")}" data-lvl="${esc(it.name)}" data-lvf="sup"></div>
+        <div><label>Résistances</label><input value="${esc((S.levels[it.name]||{}).res||"")}" data-lvl="${esc(it.name)}" data-lvf="res"></div>
+      </div>
+    </div>`).join("");
+  lv.querySelectorAll("input[data-lvl]").forEach(inp=>inp.addEventListener("change",()=>{
+    const n=inp.dataset.lvl; S.levels[n]=S.levels[n]||{}; S.levels[n][inp.dataset.lvf]=inp.value; markDirty();
+  }));
+}
+
+/* ================= REVUE ================= */
+function revTable(elId, groups, label){
+  const keys=Object.keys(groups);
+  if(!keys.length){ $(elId).innerHTML=`<tr><td class="empty">Pas encore de trades clôturés</td></tr>`; return; }
+  let h=`<tr><th>${label}</th><th class="num">Trades</th><th class="num">Réussite</th><th class="num">Net (€)</th><th class="num">R total</th><th class="num">Violations</th></tr>`;
+  for(const k of keys){
+    const g=groups[k], n=g.length;
+    const w=g.filter(x=>x.net>0).length;
+    const net=g.reduce((a,x)=>a+x.net,0);
+    const r=g.reduce((a,x)=>a+x.r,0);
+    const v=g.filter(x=>x.violation).length;
+    h+=`<tr><td>${esc(k)}</td><td class="num">${n}</td><td class="num">${pct(w/n)}</td><td class="num ${net>0?'pos':net<0?'neg':''}">${eur(net)}</td><td class="num ${r>0?'pos':r<0?'neg':''}">${num(r)}R</td><td class="num" ${v?'style="color:var(--warn)"':''}>${v||"–"}</td></tr>`;
+  }
+  $(elId).innerHTML=h;
+}
+function groupBy(rows, keyFn){
+  const g={};
+  rows.forEach(x=>{ const k=keyFn(x); if(k==null) return; (g[k]=g[k]||[]).push(x); });
+  return g;
+}
+function weekLabel(dateStr){
+  const d=new Date(dateStr+"T12:00"); if(isNaN(d)) return null;
+  const off=(d.getDay()+6)%7;
+  const mon=new Date(d); mon.setDate(d.getDate()-off);
+  const sun=new Date(mon); sun.setDate(mon.getDate()+6);
+  const f=x=>x.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"});
+  return `Semaine du ${f(mon)} au ${f(sun)}`;
+}
+function renderReview(st){
+  if(!$("revWeeks")) return;
+  const rows=st.rows;
+  revTable("revWeeks", groupBy(rows, x=>weekLabel(x.date)), "Semaine");
+  revTable("revDays",  groupBy(rows, x=>x.date), "Date");
+  const DOW=["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
+  revTable("revDow",   groupBy(rows, x=>{const d=new Date(x.date+"T12:00"); return isNaN(d)?null:DOW[d.getDay()];}), "Jour");
+  revTable("revHour",  groupBy(rows, x=>x.time?x.time.slice(0,2)+"h":null), "Heure");
+  revTable("revConv",  groupBy(rows, x=>"Conviction "+x.conv), "Niveau");
+  revTable("revSens",  groupBy(rows, x=>x.sens), "Sens");
+}
+
+/* ================= PRÉPARATION LUNDI ================= */
+function renderPrep(){
+  const el = $("prepCard"); if(!el) return;
+  if(!Array.isArray(S.prep) || S.prep.length!==PREP_ITEMS.length) S.prep = PREP_ITEMS.map(()=>false);
+  const done = S.prep.filter(Boolean).length;
+  if(done===PREP_ITEMS.length){ el.innerHTML=""; return; }
+  el.innerHTML = `<div class="card" style="border-color:var(--blue)">
+    <h2>Démarrage lundi — préparation <span class="mini">(${done}/${PREP_ITEMS.length})</span></h2>
+    ${PREP_ITEMS.map((txt,i)=>`<label class="check-item"><input type="checkbox" data-prep="${i}" ${S.prep[i]?"checked":""}> <span>${txt}</span></label>`).join("")}
+    <p class="mini" style="margin-top:8px">Cette checklist est enregistrée dans ta sauvegarde JSON. Elle disparaît une fois complète.</p>
+  </div>`;
+  el.querySelectorAll("input[data-prep]").forEach(cb=>cb.addEventListener("change",()=>{
+    S.prep[+cb.dataset.prep]=cb.checked; markDirty(); renderPrep();
+  }));
+}
+function renderHeader(st){
+  $("hdrBalance").textContent = eur(st.balance);
+  $("hdrBalance").className = "v " + (st.netTotal>0?"pos":st.netTotal<0?"neg":"");
+  $("hdrBalanceSub").textContent = `solde démo · départ ${eur(S.startBalance)}`;
+  const start = new Date(S.startDate+"T00:00:00");
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.floor((today-start)/86400000)+1;
+  $("dayBadge").textContent = diff<1 ? `Départ le ${start.toLocaleDateString("fr-FR")}` :
+    diff> S.testDays ? `Test terminé (${S.testDays} j) — verdict dans la Grille` : `Jour ${diff} / ${S.testDays}`;
+}
+
+/* ================= DASHBOARD ================= */
+function tile(l,v,cls="",s=""){ return `<div class="tile"><div class="l">${l}</div><div class="v ${cls}">${v}</div>${s?`<div class="s">${s}</div>`:""}</div>`; }
+function renderDash(st){
+  renderSessionBar(); renderPrep();
+  const d = dailyStopHit(st, todayStr());
+  $("dailyBanner").innerHTML = newsBannerHTML() + (d.hit
+    ? `<div class="banner crit"><b>STOP JOURNÉE ATTEINT.</b> Perte du jour : ${eur(dailyNet(st,todayStr()))} (limite ${pct(S.dailyLossMax)} de ${eur(d.ds)}). Ferme MT5, reviens demain. C'est la règle n°4 que tu as écrite toi-même.</div>` : "");
+  const locked=[], okInst=[];
+  S.instruments.forEach(it=>{
+    const rk=it.lotMin*it.stopTyp*it.vp, p=rk/st.balance;
+    (p<=S.cap?okInst:locked).push({it,rk,p,unlockAt:rk/S.cap});
+  });
+  $("goldBanner").innerHTML = (locked.length
+    ? `<div class="banner warn"><b>Instruments verrouillés à ton solde actuel (${eur(st.balance)}) :</b> ${locked.map(x=>`${esc(x.it.name.split(" ")[0])} — risque mini ${eur(x.rk)} = ${pct(x.p)} (débloque vers ${eur(x.unlockAt)})`).join(" · ")}. Plafond : ${pct(S.cap)}.</div>` : "") +
+    (okInst.length
+    ? `<div class="banner good"><b>Tradable(s) dans le plafond :</b> ${okInst.map(x=>`${esc(x.it.name.split(" ")[0])} (${pct(x.p)} au lot mini/stop typique)`).join(" · ")}.</div>`
+    : `<div class="banner crit"><b>Aucun instrument ne passe sous ton plafond de ${pct(S.cap)} à ce solde.</b> Trader quand même = violation garantie dès le premier trade. Options : resserrer les stops (si le broker l'accepte), ou augmenter le solde.</div>`);
+  const cc = st.correlatedOpenClash;
+  $("openRiskBanner").innerHTML =
+    (st.openRiskPct > S.openRiskMax
+      ? `<div class="banner crit"><b>Risque ouvert au-dessus du plafond :</b> ${eur(st.openRiskEUR)} engagés (${pct(st.openRiskPct)}) sur ${st.openCount} position(s), plafond ${pct(S.openRiskMax)}. Ne rouvre rien avant d'avoir fermé ou réduit une position.</div>` : "") +
+    (cc ? `<div class="banner warn"><b>Positions corrélées dans le même sens :</b> ${esc(cc.group.join(" et "))} sont ouverts en ${cc.sens} en même temps. Ce ne sont pas deux paris indépendants — si le marché US se retourne, les deux perdent ensemble.</div>` : "");
+  if(st.openCount>0){
+    $("openPosDashCard").style.display="block";
+    $("openPosCount").textContent = `(${st.openCount}/${S.maxOpen}, risque total ${eur(st.openRiskEUR)} · ${pct(st.openRiskPct)})`;
+    let oh=`<tr><th>Date</th><th>Instr.</th><th>Sens</th><th class="num">Entrée</th><th class="num">Stop</th><th class="num">TP</th><th class="num">Lot</th><th class="num">Risque</th><th>BE ?</th><th>Source</th><th></th></tr>`;
+    st.openRows.forEach(x=>{
+      oh+=`<tr><td>${x.date}</td><td>${esc(x.instrument.split(" ")[0])}</td><td>${x.sens}</td><td class="num">${num(x.entry)}</td><td class="num">${num(x.stop)}</td><td class="num">${x.tp!=null?num(x.tp):"–"}</td><td class="num">${num(x.lot)}</td><td class="num">${eur(x.riskEUR)} (${pct(x.riskPct)})</td><td>${x.be?"oui":"non"}</td><td>${esc(x.source||"—")}</td>
+        <td><button class="btn btn-primary" style="padding:3px 9px;font-size:11px" onclick="editTrade(${x.id})">Clôturer / gérer</button></td></tr>`;
+    });
+    $("openPosTable").innerHTML=oh;
+  } else { $("openPosDashCard").style.display="none"; }
+  $("kpiTiles").innerHTML =
+    tile("Trades", st.n||0, "", `${st.wins||0} G · ${st.losses||0} P`) +
+    tile("Taux de réussite", st.winRate==null?"–":pct(st.winRate)) +
+    tile("Résultat net", eur(st.netTotal), st.netTotal>0?"pos":st.netTotal<0?"neg":"", pct(st.netPct)+" du départ") +
+    tile("Espérance / trade", st.expR==null?"–":num(st.expR)+" R", st.expR>0?"pos":st.expR<0?"neg":"", st.expEUR==null?"":eur(st.expEUR)) +
+    tile("Facteur de profit", st.pf==null?"–":(st.pf===Infinity?"∞":num(st.pf))) +
+    tile("Drawdown max", pct(st.maxDDpct), st.maxDDpct>S.grid.ddMax?"neg":"", eur(st.maxDD)) +
+    tile("Série de pertes max", st.maxStreak||0) +
+    tile("Discipline", st.discipline==null?"–":pct(st.discipline), st.discipline!=null&&st.discipline<S.grid.ruleOk?"neg":"", "trades sans violation") +
+    tile("Spreads payés", eur(st.spreadTotal), "", "le coût invisible") +
+    tile("Risque ouvert", eur(st.openRiskEUR), st.openRiskPct>S.openRiskMax?"neg":"", `${st.openCount} position(s) · ${pct(st.openRiskPct)}`);
+  renderEquity(st); renderHist(st);
+  renderBreakdown(st, "instTable", x=>x.instrument);
+  renderBreakdown(st, "srcTable", x=>x.source||"—");
+}
+function renderBreakdown(st, elId, keyFn){
+  const groups = {};
+  for(const x of st.rows){ const k=keyFn(x); (groups[k]=groups[k]||[]).push(x); }
+  const keys = Object.keys(groups);
+  if(!keys.length){ $(elId).innerHTML = `<tr><td class="empty">Aucun trade pour l'instant</td></tr>`; return; }
+  let h = `<tr><th></th><th class="num">Trades</th><th class="num">Réussite</th><th class="num">Net (€)</th><th class="num">Esp. (R)</th></tr>`;
+  for(const k of keys){
+    const g = groups[k], n=g.length;
+    const w = g.filter(x=>x.net>0).length;
+    const net = g.reduce((a,x)=>a+x.net,0);
+    const er = g.reduce((a,x)=>a+x.r,0)/n;
+    h += `<tr><td>${esc(k)}</td><td class="num">${n}</td><td class="num">${pct(w/n)}</td><td class="num ${net>0?'pos':net<0?'neg':''}">${eur(net)}</td><td class="num ${er>0?'pos':er<0?'neg':''}">${num(er)}</td></tr>`;
+  }
+  $(elId).innerHTML = h;
+}
+
+/* ================= GRAPHIQUES (SVG) ================= */
+function renderEquity(st){
+  const W=520,H=240,P={t:14,r:14,b:26,l:52};
+  if(!st.rows.length){ $("equityChart").innerHTML=`<div class="empty">La courbe apparaîtra dès ton premier trade.</div>`; return; }
+  const pts = [{i:0,bal:S.startBalance,label:"Départ"}].concat(st.rows.map((x,i)=>({i:i+1,bal:x.bal,label:`#${i+1} · ${x.date}`,net:x.net})));
+  const ys = pts.map(p=>p.bal);
+  let ymin=Math.min(...ys, S.startBalance), ymax=Math.max(...ys, S.startBalance);
+  const pad=(ymax-ymin)*0.1||5; ymin-=pad; ymax+=pad;
+  const X=i=>P.l+(W-P.l-P.r)*i/Math.max(1,pts.length-1);
+  const Y=v=>P.t+(H-P.t-P.b)*(1-(v-ymin)/(ymax-ymin));
+  const ticks=4; let grid="",lbls="";
+  for(let k=0;k<=ticks;k++){ const v=ymin+(ymax-ymin)*k/ticks, y=Y(v);
+    grid+=`<line x1="${P.l}" y1="${y}" x2="${W-P.r}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>`;
+    lbls+=`<text x="${P.l-8}" y="${y+4}" text-anchor="end" font-size="10" fill="var(--muted)">${Math.round(v)}</text>`; }
+  const y0=Y(S.startBalance);
+  const path = pts.map((p,k)=>(k?"L":"M")+X(p.i).toFixed(1)+" "+Y(p.bal).toFixed(1)).join(" ");
+  const last = pts[pts.length-1];
+  $("equityChart").innerHTML =
+   `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" id="eqSvg">
+     ${grid}${lbls}
+     <line x1="${P.l}" y1="${y0}" x2="${W-P.r}" y2="${y0}" stroke="var(--baseline)" stroke-width="1" stroke-dasharray="4 3"/>
+     <text x="${W-P.r}" y="${y0-5}" text-anchor="end" font-size="10" fill="var(--muted)">départ ${eur(S.startBalance)}</text>
+     <path d="${path}" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round"/>
+     <circle cx="${X(last.i)}" cy="${Y(last.bal)}" r="4" fill="var(--blue)" stroke="var(--surface)" stroke-width="2"/>
+     <line id="eqCross" x1="0" y1="${P.t}" x2="0" y2="${H-P.b}" stroke="var(--muted)" stroke-width="1" style="display:none"/>
+     <text x="${(P.l+W-P.r)/2}" y="${H-6}" text-anchor="middle" font-size="10" fill="var(--muted)">trades →</text>
+   </svg>`;
+  const svg=$("eqSvg"), tip=$("equityTip"), cross=svg.querySelector("#eqCross");
+  svg.addEventListener("mousemove", ev=>{
+    const r=svg.getBoundingClientRect(), sx=W/r.width;
+    const mx=(ev.clientX-r.left)*sx;
+    let best=0,bd=1e9;
+    pts.forEach((p,k)=>{const d=Math.abs(X(p.i)-mx); if(d<bd){bd=d;best=k;}});
+    const p=pts[best];
+    cross.style.display="block"; cross.setAttribute("x1",X(p.i)); cross.setAttribute("x2",X(p.i));
+    tip.style.display="block";
+    tip.innerHTML=`<b>${esc(p.label)}</b><br>Solde : ${eur(p.bal)}${p.net!=null?`<br>Trade : <span class="${p.net>0?'pos':'neg'}">${eur(p.net)}</span>`:""}`;
+    const bx=(ev.clientX-r.left), by=(ev.clientY-r.top);
+    tip.style.left=Math.min(bx+14, r.width-160)+"px"; tip.style.top=(by-10)+"px";
+  });
+  svg.addEventListener("mouseleave",()=>{tip.style.display="none";cross.style.display="none";});
+}
+function renderHist(st){
+  const W=520,H=240,P={t:14,r:14,b:34,l:36};
+  if(!st.rows.length){ $("rHist").innerHTML=`<div class="empty">La distribution apparaîtra dès ton premier trade.</div>`; return; }
+  const edges=[-Infinity,-2,-1,0,1,2,3,Infinity];
+  const labels=["< -2R","-2 à -1R","-1 à 0R","0 à 1R","1 à 2R","2 à 3R","> 3R"];
+  const counts=labels.map(()=>0);
+  st.rows.forEach(x=>{ for(let k=0;k<labels.length;k++){ if(x.r>edges[k]&&x.r<=edges[k+1]){counts[k]++;break;} } });
+  const maxC=Math.max(...counts,1);
+  const bw=(W-P.l-P.r)/labels.length;
+  let bars="",axis="";
+  counts.forEach((c,k)=>{
+    const h=(H-P.t-P.b)*c/maxC;
+    const x=P.l+k*bw+3, y=H-P.b-h;
+    const neg=k<3;
+    bars+=`<rect data-k="${k}" x="${x}" y="${y}" width="${bw-6}" height="${Math.max(h,c?2:0)}" rx="4" fill="${neg?'var(--red-div)':'var(--blue)'}"/>`;
+    if(c) bars+=`<text x="${x+(bw-6)/2}" y="${y-5}" text-anchor="middle" font-size="10" fill="var(--ink2)">${c}</text>`;
+    axis+=`<text x="${P.l+k*bw+bw/2}" y="${H-10}" text-anchor="middle" font-size="9" fill="var(--muted)">${labels[k]}</text>`;
+  });
+  $("rHist").innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto" id="histSvg">
+    <line x1="${P.l}" y1="${H-P.b}" x2="${W-P.r}" y2="${H-P.b}" stroke="var(--baseline)" stroke-width="1"/>
+    ${bars}${axis}</svg>`;
+  const svg=$("histSvg"), tip=$("histTip");
+  svg.querySelectorAll("rect").forEach(rc=>{
+    rc.addEventListener("mousemove",ev=>{
+      const k=+rc.dataset.k, r=svg.getBoundingClientRect();
+      tip.style.display="block";
+      tip.innerHTML=`<b>${labels[k]}</b><br>${counts[k]} trade${counts[k]>1?"s":""}`;
+      tip.style.left=Math.min(ev.clientX-r.left+14,r.width-120)+"px"; tip.style.top=(ev.clientY-r.top-10)+"px";
+    });
+    rc.addEventListener("mouseleave",()=>tip.style.display="none");
+  });
+}
+
+/* ================= JOURNAL ================= */
+function renderOpenBlock(st){
+  const card=$("journalOpenCard"); if(!card) return;
+  if(st.openCount===0){ card.style.display="none"; return; }
+  card.style.display="block";
+  $("journalOpenCount").textContent=`(${st.openCount}, risque total ${eur(st.openRiskEUR)} · ${pct(st.openRiskPct)})`;
+  let h=`<tr><th>Date</th><th>Instr.</th><th>Sens</th><th>Conv.</th><th class="num">Entrée</th><th class="num">Stop</th><th class="num">TP</th><th class="num">Lot</th><th class="num">Risque</th><th>BE ?</th><th>Source</th><th></th></tr>`;
+  st.openRows.forEach(x=>{
+    h+=`<tr><td>${x.date}</td><td>${esc(x.instrument.split(" ")[0])}</td><td>${x.sens}</td><td>${x.conv}</td>
+      <td class="num">${num(x.entry)}</td><td class="num">${num(x.stop)}</td><td class="num">${x.tp!=null?num(x.tp):"–"}</td><td class="num">${num(x.lot)}</td>
+      <td class="num">${eur(x.riskEUR)} (${pct(x.riskPct)})</td><td>${x.be?"oui":"non"}</td><td>${esc(x.source||"—")}</td>
+      <td><button class="btn btn-primary" style="padding:3px 9px;font-size:11px" onclick="editTrade(${x.id})">Clôturer / gérer</button>
+          <button class="btn btn-ghost" style="padding:3px 9px;font-size:11px" onclick="delTrade(${x.id})">✕</button></td></tr>`;
+  });
+  $("journalOpenTable").innerHTML=h;
+}
+function renderJournal(st){
+  renderOpenBlock(st);
+  const fi=$("filterInst").value, fs=$("filterSrc").value;
+  const rows = st.rows.filter(x=>(!fi||x.instrument===fi)&&(!fs||(x.source||"—")===fs));
+  if(!rows.length){ $("journalTable").innerHTML=`<tr><td class="empty">Aucun trade clôturé${(fi||fs)?" avec ces filtres":""}.</td></tr>`; return; }
+  let h=`<tr><th>#</th><th>Date</th><th>Instr.</th><th>Sens</th><th>Conv.</th><th class="num">Entrée</th><th class="num">Stop</th><th class="num">TP</th><th class="num">Sortie</th><th class="num">Lot</th><th class="num">RR plan</th><th class="num">Spread €</th><th class="num">Net €</th><th class="num">R</th><th class="num">Solde</th><th>Source</th><th>⚠</th><th></th></tr>`;
+  rows.forEach((x)=>{
+    const idx = st.rows.indexOf(x)+1;
+    const flags=[x.overCap?"plafond":"",(x.rr!=null&&x.rr<S.rrMin)?"RR<"+S.rrMin:"",x.violation&&!x.overCap&&!(x.rr!=null&&x.rr<S.rrMin)?"violation":""].filter(Boolean).join(", ");
+    h+=`<tr>
+      <td>${idx}</td><td>${x.date}</td><td>${esc(x.instrument.split(" ")[0])}</td><td>${x.sens}</td><td>${x.conv}</td>
+      <td class="num">${num(x.entry)}</td><td class="num">${num(x.stop)}</td><td class="num">${x.tp!=null?num(x.tp):"–"}</td><td class="num">${num(x.exit)}</td>
+      <td class="num">${num(x.lot)}</td><td class="num">${x.rr!=null?num(x.rr):"–"}</td>
+      <td class="num">${num(x.spreadCost)}</td>
+      <td class="num ${x.net>0?'pos':x.net<0?'neg':''}">${num(x.net)}</td>
+      <td class="num ${x.r>0?'pos':x.r<0?'neg':''}">${num(x.r)}</td>
+      <td class="num">${num(x.bal)}</td>
+      <td>${esc(x.source||"—")}</td>
+      <td style="color:var(--warn)">${flags}</td>
+      <td><button class="btn btn-ghost" style="padding:3px 9px;font-size:11px" onclick="editTrade(${x.id})">✎</button>
+          <button class="btn btn-ghost" style="padding:3px 9px;font-size:11px" onclick="delTrade(${x.id})">✕</button></td>
+    </tr>`;
+  });
+  $("journalTable").innerHTML=h;
+  const opts=(sel,vals)=>{ const cur=sel.value; sel.innerHTML=`<option value="">${sel.id==="filterInst"?"Tous instruments":"Toutes sources"}</option>`+vals.map(v=>`<option ${v===cur?"selected":""}>${esc(v)}</option>`).join(""); };
+  opts($("filterInst"), [...new Set(st.rows.map(x=>x.instrument))]);
+  opts($("filterSrc"), [...new Set(st.rows.map(x=>x.source||"—"))]);
+}
+window.editTrade = id=>{
+  const t = trades.find(x=>x.id===id); if(!t) return;
+  editId=id;
+  $("formTitle").textContent=`Modifier le trade`;
+  $("cancelEdit").style.display="inline-block";
+  $("f-date").value=t.date; $("f-time").value=t.time||""; $("f-inst").value=t.instrument;
+  setSeg("f-sens",t.sens); formSens=t.sens;
+  setSeg("f-conv",String(t.conv)); formConv=t.conv;
+  $("f-entry").value=t.entry; $("f-stop").value=t.stop; $("f-tp").value=t.tp??""; $("f-lot").value=t.lot;
+  $("f-exit").value=t.exit??""; $("f-comm").value=t.comm||0; $("f-source").value=t.source||S.sources[0];
+  $("f-mae").value=t.mae??""; $("f-note").value=t.note||""; $("f-violation").checked=!!t.violation;
+  $("beBox").style.display="grid"; $("f-be").checked=!!t.be; $("f-bestop").value=t.bestop??"";
+  showTab("new"); renderCalc(computeAll()); updateSaveLabel();
+};
+window.delTrade = id=>{
+  if(!confirm("Supprimer ce trade ?")) return;
+  trades = trades.filter(x=>x.id!==id); markDirty(); renderAll();
+};
+
+/* ================= GRILLE 90J ================= */
+function renderGrid(st){
+  const g=S.grid;
+  const rows=[
+    ["Nombre de trades (échantillon)", `≥ ${g.minTrades}`, st.n, st.n>=g.minTrades],
+    ["Espérance par trade", `≥ ${num(g.expR)} R`, st.expR==null?"–":num(st.expR)+" R", st.expR!=null&&st.expR>=g.expR],
+    ["Rendement net", `≥ ${pct(g.netPct)}`, pct(st.netPct), st.netPct>=g.netPct],
+    ["Drawdown max", `≤ ${pct(g.ddMax)}`, pct(st.maxDDpct), st.maxDDpct<=g.ddMax],
+    ["Facteur de profit", `≥ ${num(g.pf,1)}`, st.pf==null?"–":(st.pf===Infinity?"∞":num(st.pf)), st.pf!=null&&st.pf>=g.pf],
+    ["Discipline (trades sans violation)", `≥ ${pct(g.ruleOk)}`, st.discipline==null?"–":pct(st.discipline), st.discipline!=null&&st.discipline>=g.ruleOk],
+  ];
+  $("gridTable").innerHTML = `<tr><th>Critère</th><th class="num">Seuil</th><th class="num">Actuel</th><th class="num">Statut</th></tr>` +
+    rows.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]?'<span class="st-ok">OK</span>':'<span class="st-ko">PAS ENCORE</span>'}</td></tr>`).join("");
+  const stopRows=[
+    ["Espérance négative après ≥ 30 trades", st.n>=30&&st.expR!=null&&st.expR<=0],
+    ["Drawdown > 25 %", st.maxDDpct>0.25],
+    ["Discipline < 70 % après ≥ 15 trades", st.n>=15&&st.discipline!=null&&st.discipline<0.70],
+    ["Compte démo à -50 % ou moins", st.balance<=S.startBalance*0.5],
+  ];
+  $("stopTable").innerHTML = `<tr><th>Condition</th><th class="num">Déclenchée ?</th></tr>` +
+    stopRows.map(r=>`<tr><td>${r[0]}</td><td class="num">${r[1]?'<span class="st-ko">OUI — STOP</span>':'<span class="muted">non</span>'}</td></tr>`).join("");
+  const anyStop = stopRows.some(r=>r[1]);
+  const allGo = rows.every(r=>r[3]);
+  const box=$("verdictBox");
+  if(anyStop){ box.className="verdict stop"; box.innerHTML=`<b>STOP.</b> Une condition d'arrêt est déclenchée. C'est la réponse que le test devait te donner — obtenue en démo, pour 0 €. Arrête, analyse le journal, et ne « te refais » pas en réel.`; }
+  else if(st.n < g.minTrades){ box.className="verdict cont"; box.innerHTML=`<b>EN COURS.</b> ${st.n} trade${st.n>1?"s":""} sur ${g.minTrades} minimum. Aucun verdict fiable avant l'échantillon complet — une bonne (ou mauvaise) semaine ne prouve rien.`; }
+  else if(allGo){ box.className="verdict go"; box.innerHTML=`<b>GO CONDITIONNEL.</b> Tous les critères passent sur ≥ ${g.minTrades} trades. Réel envisageable à taille MINIMALE, en gardant exactement les mêmes règles. Attends quand même la fin des ${S.testDays} jours.`; }
+  else { box.className="verdict cont"; box.innerHTML=`<b>CONTINUER / AJUSTER.</b> Échantillon suffisant mais certains critères ne passent pas (voir tableau). Identifie le maillon faible dans le journal — par instrument et par source — avant de continuer.`; }
+}
+
+/* ================= NOUVEAU TRADE ================= */
+function setSeg(id,val){ document.querySelectorAll(`#${id} button`).forEach(b=>b.classList.toggle("on",b.dataset.v===val)); }
+function initForm(){
+  $("f-date").value=todayStr();
+  $("f-inst").innerHTML=S.instruments.map(i=>`<option>${esc(i.name)}</option>`).join("");
+  $("f-inst").value=S.instruments[0].name; // OR par défaut (seul instrument potentiellement jouable à 100-200 €)
+  $("f-source").innerHTML=S.sources.map(s=>`<option>${esc(s)}</option>`).join("");
+  setSeg("f-sens",formSens); setSeg("f-conv",String(formConv));
+  document.querySelectorAll("#f-sens button").forEach(b=>b.onclick=()=>{formSens=b.dataset.v;setSeg("f-sens",formSens);renderCalc(computeAll());});
+  document.querySelectorAll("#f-conv button").forEach(b=>b.onclick=()=>{formConv=+b.dataset.v;setSeg("f-conv",String(formConv));renderCalc(computeAll());});
+  ["f-entry","f-stop","f-tp","f-lot","f-exit","f-inst","f-comm"].forEach(id=>$(id).addEventListener("input",()=>renderCalc(computeAll())));
+  $("beBox").style.display="none";
+  updateSaveLabel();
+  const items=[
+    "Le stop est décidé AVANT l'entrée, et sera placé dans MT5 en même temps que l'ordre.",
+    "Le TP vise au moins "+"2× le risque (RR ≥ 2).",
+    "Le risque de ce trade respecte mon niveau de conviction (1 / 1,5 / 2 %) et le plafond 3 %.",
+    "Pas de news majeure (NFP, CPI, FOMC) dans les 30 prochaines minutes.",
+    "Je n'ai pas atteint ma perte max journalière.",
+    "Ce trade suit un setup défini — ce n'est pas de l'ennui, ni une revanche sur le trade d'avant.",
+  ];
+  $("checklist").innerHTML=items.map(t=>`<label class="check-item"><input type="checkbox"> <span>${t}</span></label>`).join("");
+}
+function renderNewTradeSide(st){
+  const d = dailyStopHit(st, todayStr());
+  $("newBanner").innerHTML = newsBannerHTML() + (d.hit
+    ? `<div class="banner crit"><b>STOP JOURNÉE.</b> Ta perte max journalière (${pct(S.dailyLossMax)}) est atteinte. Tu ne devrais plus prendre AUCUN trade aujourd'hui. Si tu consignes un trade déjà pris, il sera marqué en violation.</div>` : "");
+}
+function readForm(){
+  return {
+    date: $("f-date").value,
+    time: $("f-time").value || null,
+    instrument: $("f-inst").value,
+    sens: formSens, conv: formConv,
+    entry: parseFloat($("f-entry").value),
+    stop: parseFloat($("f-stop").value),
+    tp: $("f-tp").value===""? null : parseFloat($("f-tp").value),
+    lot: parseFloat($("f-lot").value),
+    exit: $("f-exit").value===""? null : parseFloat($("f-exit").value),
+    comm: parseFloat($("f-comm").value)||0,
+    source: $("f-source").value,
+    mae: $("f-mae").value===""? null : parseFloat($("f-mae").value),
+    note: $("f-note").value.trim(),
+    violation: $("f-violation").checked,
+    be: $("f-be").checked,
+    bestop: $("f-bestop").value===""? null : parseFloat($("f-bestop").value),
+  };
+}
+function openRiskExcluding(st, excludeId){
+  return st.openRows.filter(x=>x.id!==excludeId).reduce((a,x)=>a+x.riskEUR,0);
+}
+function correlatedGroupOf(name){
+  return (S.correlated||[]).find(g=>g.includes(name)) || null;
+}
+function renderCalc(st){
+  const f=readForm();
+  const inst=S.instruments.find(i=>i.name===f.instrument);
+  const bal=st.balance;
+  const el=$("calcPanel");
+  if(!inst){ el.innerHTML=""; return; }
+  const tierPct=S.tiers[f.conv]||0;
+  const allowed=bal*tierPct, capEUR=bal*S.cap;
+  let h = `<div class="calc-row"><span class="k">Solde actuel</span><span class="v">${eur(bal)}</span></div>
+           <div class="calc-row"><span class="k">Risque autorisé (conviction ${f.conv})</span><span class="v">${eur(allowed)} <span class="muted">(${pct(tierPct)})</span></span></div>`;
+  const hasES = !isNaN(f.entry)&&!isNaN(f.stop)&&f.entry!==f.stop;
+  if(hasES){
+    const riskPrice=Math.abs(f.entry-f.stop);
+    const lotTheo=allowed/(riskPrice*inst.vp);
+    const lotSug=Math.max(0, Math.floor(lotTheo/inst.lotStep)*inst.lotStep);
+    const riskAtMin=inst.lotMin*riskPrice*inst.vp;
+    h += `<div class="calc-row"><span class="k">Distance du stop</span><span class="v">${num(riskPrice)} pts</span></div>`;
+    if((inst.stopMin||0)>0 && riskPrice < inst.stopMin){
+      h += `<div class="calc-row"><span class="k" style="color:#ffb0b0">Stop refusé par le broker</span><span class="v" style="color:#ffb0b0">distance mini ${num(inst.stopMin)} pts sur cet instrument — l'ordre serait rejeté</span></div>`;
+    }
+    if(lotSug < inst.lotMin){
+      h += `<div class="calc-row"><span class="k" style="color:#ffb0b0">Lot conseillé</span><span class="v" style="color:#ffb0b0">IMPOSSIBLE — le lot mini ${num(inst.lotMin)} risque ${eur(riskAtMin)} (${pct(riskAtMin/bal)})</span></div>`;
+    } else {
+      h += `<div class="calc-row"><span class="k">Lot conseillé (≤ risque autorisé)</span><span class="v" style="color:var(--good)">${lotSug.toFixed(2)}</span></div>`;
+    }
+    if(!isNaN(f.lot)&&f.lot>0){
+      const riskEUR=riskPrice*f.lot*inst.vp;
+      const over=riskEUR>capEUR*1.0001, overTier=riskEUR>allowed*1.0001;
+      h += `<div class="calc-row"><span class="k">Risque avec ton lot (${num(f.lot)})</span><span class="v ${over?'neg':overTier?'':''}" ${over?'style="color:#ffb0b0"':overTier?'style="color:var(--warn)"':''}>${eur(riskEUR)} (${pct(riskEUR/bal)})${over?" — DÉPASSE LE PLAFOND "+pct(S.cap):overTier?" — dépasse ta conviction":""}</span></div>`;
+    }
+    if(f.tp!=null&&!isNaN(f.tp)){
+      const rr=Math.abs(f.tp-f.entry)/riskPrice;
+      h += `<div class="calc-row"><span class="k">RR planifié</span><span class="v" ${rr<S.rrMin?'style="color:var(--warn)"':'style="color:var(--good)"'}>${num(rr)}${rr<S.rrMin?" — sous ton minimum de "+num(S.rrMin,1):""}</span></div>`;
+      if(!isNaN(f.lot)&&f.lot>0){
+        const gTP=Math.abs(f.tp-f.entry)*f.lot*inst.vp - inst.spread*f.lot*inst.vp;
+        h += `<div class="calc-row"><span class="k">Gain si TP touché (net spread)</span><span class="v pos">${eur(gTP)}</span></div>`;
+      }
+    } else {
+      h += `<div class="calc-row"><span class="k">RR planifié</span><span class="v" style="color:var(--warn)">pas de TP saisi</span></div>`;
+    }
+    h += `<div class="calc-row"><span class="k">Coût du spread (aller-retour compté)</span><span class="v">${eur(inst.spread*(isNaN(f.lot)?inst.lotMin:f.lot)*inst.vp)}</span></div>`;
+    if(!isNaN(f.lot)&&f.lot>0){
+      const riskEUR=riskPrice*f.lot*inst.vp;
+      const otherOpen=openRiskExcluding(st, editId);
+      const combined=otherOpen+riskEUR, combinedPct=combined/bal;
+      h += `<div class="calc-row"><span class="k">Risque déjà ouvert (autres positions)</span><span class="v">${eur(otherOpen)} (${pct(otherOpen/bal)})</span></div>
+            <div class="calc-row"><span class="k">Risque total si ce trade s'ouvre</span><span class="v" ${combinedPct>S.openRiskMax?'style="color:#ffb0b0"':''}>${eur(combined)} (${pct(combinedPct)})${combinedPct>S.openRiskMax?" — DÉPASSE le plafond ouvert "+pct(S.openRiskMax):""}</span></div>`;
+    }
+  } else {
+    h += `<div class="calc-row"><span class="k">Entre un prix d'entrée et un stop</span><span class="v">→ lot conseillé automatique</span></div>`;
+  }
+  el.innerHTML=h;
+  // panneau exposition ouverte + corrélation
+  const grp=correlatedGroupOf(f.instrument);
+  const sameGrpSameSens = grp ? st.openRows.filter(x=>x.id!==editId && grp.includes(x.instrument) && x.sens===formSens) : [];
+  const posCard=$("openPosCard"), posPanel=$("openPosPanel");
+  if(st.openCount>0){
+    posCard.style.display="block";
+    posPanel.innerHTML = `<div class="calc-row"><span class="k">Positions ouvertes</span><span class="v">${st.openCount} / ${S.maxOpen} max</span></div>` +
+      st.openRows.map(x=>`<div class="calc-row"><span class="k">${esc(x.instrument.split(" ")[0])} · ${x.sens}</span><span class="v">${eur(x.riskEUR)} (${pct(x.riskPct)})</span></div>`).join("") +
+      (sameGrpSameSens.length ? `<div class="calc-row" style="color:var(--warn)"><span class="k">⚠ Corrélation</span><span class="v">${esc(grp.join(" / "))} déjà ouvert dans le même sens — ton risque directionnel réel est plus élevé que la somme affichée.</span></div>` : "");
+  } else { posCard.style.display="none"; posPanel.innerHTML=""; }
+  // violation box visibility
+  const st2=st; const d=dailyStopHit(st2, $("f-date").value||todayStr());
+  let needsViolation=false;
+  if(hasES && !isNaN(f.lot)&&f.lot>0){
+    const riskEUR=Math.abs(f.entry-f.stop)*f.lot*inst.vp;
+    if(riskEUR>capEUR*1.0001) needsViolation=true;
+    const otherOpen=openRiskExcluding(st, editId);
+    if((otherOpen+riskEUR)>bal*S.openRiskMax*1.0001) needsViolation=true;
+  }
+  if(d.hit) needsViolation=true;
+  if(st.openCount>=S.maxOpen && editId==null && f.exit==null) needsViolation=true;
+  $("violationBox").style.display=needsViolation?"block":"none";
+}
+$("saveTrade").addEventListener("click",()=>{
+  const f=readForm();
+  const missing=[];
+  if(!f.date) missing.push("date");
+  if(isNaN(f.entry)) missing.push("entrée");
+  if(isNaN(f.stop)) missing.push("stop");
+  if(isNaN(f.lot)||f.lot<=0) missing.push("lot");
+  if(missing.length){ alert("Champs manquants : "+missing.join(", ")+".\nRappel : pas de trade sans stop — c'est ta règle n°2."); return; }
+  if(f.entry===f.stop){ alert("Le stop ne peut pas être égal à l'entrée."); return; }
+  const inst=S.instruments.find(i=>i.name===f.instrument);
+  const st=computeAll();
+  const riskEUR=Math.abs(f.entry-f.stop)*f.lot*inst.vp;
+  const capEUR=st.balance*S.cap;
+  const d=dailyStopHit(st, f.date);
+  const otherOpen=openRiskExcluding(st, editId);
+  const overOpenCap = (otherOpen+riskEUR) > st.balance*S.openRiskMax*1.0001;
+  const isNewOpenPosition = f.exit==null && editId==null;
+  const overMaxCount = isNewOpenPosition && st.openCount>=S.maxOpen;
+  if((riskEUR>capEUR*1.0001 || d.hit || overOpenCap || overMaxCount) && !f.violation){
+    alert((riskEUR>capEUR*1.0001?`Ce trade risque ${eur(riskEUR)} soit plus que ton plafond de ${pct(S.cap)} (${eur(capEUR)}).\n`:"")+
+          (d.hit?`La perte max journalière est atteinte pour le ${f.date}.\n`:"")+
+          (overOpenCap?`Risque total ouvert (${eur(otherOpen+riskEUR)}) au-dessus du plafond ${pct(S.openRiskMax)}.\n`:"")+
+          (overMaxCount?`Tu as déjà ${st.openCount} position(s) ouverte(s) — plafond fixé à ${S.maxOpen}.\n`:"")+
+          `Pour l'enregistrer quand même, coche la case « violation assumée » — il comptera contre ta discipline.`);
+    return;
+  }
+  if(editId!=null){
+    const i=trades.findIndex(x=>x.id===editId);
+    trades[i]={...trades[i],...f};
+    editId=null; $("formTitle").textContent="Nouveau trade"; $("cancelEdit").style.display="none"; $("beBox").style.display="none";
+  } else {
+    trades.push({id:Date.now(), ...f});
+  }
+  markDirty();
+  ["f-entry","f-stop","f-tp","f-lot","f-exit","f-mae","f-note","f-bestop"].forEach(id=>$(id).value="");
+  $("f-comm").value=0; $("f-violation").checked=false; $("f-be").checked=false;
+  document.querySelectorAll("#checklist input").forEach(c=>c.checked=false);
+  renderAll();
+  showTab("dash");
+});
+$("cancelEdit").addEventListener("click",()=>{
+  editId=null; $("formTitle").textContent="Nouveau trade"; $("cancelEdit").style.display="none"; $("beBox").style.display="none";
+  ["f-entry","f-stop","f-tp","f-lot","f-exit","f-mae","f-note","f-bestop"].forEach(id=>$(id).value="");
+  $("f-be").checked=false;
+});
+function updateSaveLabel(){
+  const btn=$("saveTrade"); if(!btn) return;
+  const exitEmpty = $("f-exit").value==="";
+  btn.textContent = editId!=null ? "Enregistrer la modification" : (exitEmpty ? "Ouvrir la position (sans sortie)" : "Enregistrer le trade clôturé");
+}
+$("f-exit").addEventListener("input", updateSaveLabel);
+
+/* ================= CALCULATEUR AUTONOME ================= */
+let c2Sens="Achat", c2Conv=2, c2BalTouched=false;
+function initCalc2(){
+  $("c2-inst").innerHTML=S.instruments.map(i=>`<option>${esc(i.name)}</option>`).join("");
+  $("c2-inst").value=S.instruments[0].name;
+  document.querySelectorAll("#c2-sens button").forEach(b=>b.onclick=()=>{c2Sens=b.dataset.v;setSeg("c2-sens",c2Sens);renderCalc2(computeAll());});
+  document.querySelectorAll("#c2-conv button").forEach(b=>b.onclick=()=>{c2Conv=+b.dataset.v;setSeg("c2-conv",String(c2Conv));renderCalc2(computeAll());});
+  ["c2-entry","c2-stop","c2-tp","c2-inst"].forEach(id=>$(id).addEventListener("input",()=>renderCalc2(computeAll())));
+  $("c2-bal").addEventListener("input",()=>{c2BalTouched=true;renderCalc2(computeAll());});
+  document.querySelectorAll("#c2-tpauto-rr button").forEach(b=>b.onclick=()=>{
+    const e=parseFloat($("c2-entry").value), s=parseFloat($("c2-stop").value);
+    if(isNaN(e)||isNaN(s)||e===s){alert("Entre d'abord un prix d'entrée et un stop.");return;}
+    const rr=parseFloat(b.dataset.rr), dist=Math.abs(e-s);
+    $("c2-tp").value = +(c2Sens==="Achat" ? e+rr*dist : e-rr*dist).toFixed(2);
+    renderCalc2(computeAll());
+  });
+  document.querySelectorAll("#c2-stoppreset button").forEach(b=>b.onclick=()=>{
+    const e=parseFloat($("c2-entry").value);
+    if(isNaN(e)){alert("Entre d'abord un prix d'entrée.");return;}
+    const inst=S.instruments.find(i=>i.name===$("c2-inst").value);
+    const dist=inst.stopTyp*parseFloat(b.dataset.m);
+    $("c2-stop").value = +(c2Sens==="Achat" ? e-dist : e+dist).toFixed(2);
+    renderCalc2(computeAll());
+  });
+}
+function renderCalc2(st){
+  const balEl=$("c2-bal"); if(!balEl) return;
+  if(!c2BalTouched) balEl.value = +st.balance.toFixed(2);
+  const bal = parseFloat(balEl.value)||st.balance;
+  const inst = S.instruments.find(i=>i.name===$("c2-inst").value); if(!inst) return;
+  const e=parseFloat($("c2-entry").value), s=parseFloat($("c2-stop").value), tp=parseFloat($("c2-tp").value);
+  const tierPct=S.tiers[c2Conv]||0, allowed=bal*tierPct, capEUR=bal*S.cap;
+  // tableau "ce que ton solde permet"
+  let aff=`<tr><th>Instrument</th><th class="num">Lot min</th><th class="num">Stop typique</th><th class="num">Risque au lot min</th><th class="num">% du solde</th><th class="num">Statut</th></tr>`;
+  S.instruments.forEach(it=>{
+    const rk=it.lotMin*it.stopTyp*it.vp, p=rk/bal;
+    aff+=`<tr><td>${esc(it.name)}</td><td class="num">${num(it.lotMin)}</td><td class="num">${num(it.stopTyp)} pts</td><td class="num">${eur(rk)}</td><td class="num">${pct(p)}</td><td class="num">${p<=S.cap?'<span class="lock ok">OK</span>':'<span class="lock ko">SUR-RISQUE</span>'}</td></tr>`;
+  });
+  $("c2-afford").innerHTML=aff;
+  // niveaux clés de l'instrument sélectionné
+  const lvl=(S.levels||{})[inst.name];
+  const lvlEl=$("c2-levels");
+  if(lvlEl) lvlEl.innerHTML = lvl && (lvl.sup||lvl.res)
+    ? `<h3 style="margin-top:12px">Niveaux clés — ${esc(inst.name)}</h3>
+       <div class="calc-row"><span class="k">Supports</span><span class="v" style="text-align:right">${esc(lvl.sup||"–")}</span></div>
+       <div class="calc-row"><span class="k">Résistances</span><span class="v" style="text-align:right">${esc(lvl.res||"–")}</span></div>
+       <p class="mini" style="margin-top:4px">Édite ces niveaux dans l'onglet Semaine. Un stop juste sous un support (achat) ou sur une résistance (vente) vaut mieux qu'un stop à distance ronde arbitraire.</p>`
+    : "";
+  const out=$("c2-out"), vBox=$("c2-verdict"), plan=$("c2-plan");
+  if(isNaN(e)||isNaN(s)||e===s){
+    vBox.innerHTML=""; plan.innerHTML="";
+    out.innerHTML=`<div class="calc-row"><span class="k">Entre un prix d'entrée et un stop</span><span class="v">→ tout se calcule ici</span></div>
+      <div class="calc-row"><span class="k">Risque autorisé (conviction ${c2Conv})</span><span class="v">${eur(allowed)} (${pct(tierPct)})</span></div>`;
+    return;
+  }
+  const stopOK = c2Sens==="Achat" ? s<e : s>e;
+  const dist=Math.abs(e-s);
+  const lotTheo=allowed/(dist*inst.vp);
+  const lotSug=Math.max(0, Math.floor(lotTheo/inst.lotStep)*inst.lotStep);
+  const riskAtMin=inst.lotMin*dist*inst.vp;
+  const impossible = lotSug < inst.lotMin && riskAtMin > capEUR*1.0001;
+  const overTierAtMin = lotSug < inst.lotMin && !impossible;
+  const lot = lotSug < inst.lotMin ? inst.lotMin : lotSug;
+  const riskEUR=dist*lot*inst.vp;
+  const spreadEUR=inst.spread*lot*inst.vp;
+  const rr = !isNaN(tp)&&dist>0 ? Math.abs(tp-e)/dist : null;
+  const tpOK = isNaN(tp) ? null : (c2Sens==="Achat" ? tp>e : tp<e);
+  const gainTP = rr!=null ? Math.abs(tp-e)*lot*inst.vp - spreadEUR : null;
+  const lossSL = -(riskEUR + spreadEUR);
+  const be = c2Sens==="Achat" ? e + inst.spread : e - inst.spread;
+  if(!stopOK){
+    vBox.innerHTML=`<div class="banner crit" style="margin-bottom:10px"><b>Stop du mauvais côté :</b> en ${c2Sens.toLowerCase()}, le stop doit être ${c2Sens==="Achat"?"SOUS":"AU-DESSUS DE"} l'entrée.</div>`;
+    out.innerHTML=""; plan.innerHTML=""; return;
+  }
+  if((inst.stopMin||0)>0 && dist < inst.stopMin){
+    vBox.innerHTML=`<div class="banner crit" style="margin-bottom:10px"><b>Stop refusé par le broker :</b> distance minimale ${num(inst.stopMin)} pts sur ${esc(inst.name)} (niveau des stops MT5). Ton stop est à ${num(dist)} pts — l'ordre serait rejeté. Élargis le stop… et revérifie le risque en €.</div>`;
+    out.innerHTML=""; plan.innerHTML=""; return;
+  }
+  vBox.innerHTML = impossible
+    ? `<div class="banner crit" style="margin-bottom:10px"><b>IMPOSSIBLE de respecter ton risque :</b> même au lot minimum (${num(inst.lotMin)}), ce stop risque ${eur(riskAtMin)} = ${pct(riskAtMin/bal)} du solde (plafond ${pct(S.cap)}). Resserre le stop, ou change d'instrument.</div>`
+    : overTierAtMin
+    ? `<div class="banner warn" style="margin-bottom:10px"><b>Lot minimum imposé : ${lot.toFixed(2)}</b> — risque ${eur(riskEUR)} = ${pct(riskEUR/bal)} du solde. C'est au-dessus de ta conviction ${c2Conv} (${pct(tierPct)}) mais encore sous le plafond de ${pct(S.cap)}. À ne prendre qu'en conviction maximale — sinon passe ce trade.</div>`
+    : `<div class="banner good" style="margin-bottom:10px"><b>Lot à prendre : ${lot.toFixed(2)}</b> — risque ${eur(riskEUR)} soit ${pct(riskEUR/bal)} du solde (autorisé : ${pct(tierPct)}).</div>`;
+  out.innerHTML =
+    `<div class="calc-row"><span class="k">Distance du stop</span><span class="v">${num(dist)} pts</span></div>
+     <div class="calc-row"><span class="k">Risque autorisé (conviction ${c2Conv})</span><span class="v">${eur(allowed)} (${pct(tierPct)})</span></div>
+     <div class="calc-row"><span class="k">Valeur du point pour ${lot.toFixed(2)} lot</span><span class="v">${eur(lot*inst.vp)} / pt</span></div>
+     <div class="calc-row"><span class="k">Perte si le stop est touché (spread inclus)</span><span class="v neg">${eur(lossSL)}</span></div>` +
+    (rr!=null ? `<div class="calc-row"><span class="k">RR planifié</span><span class="v" style="color:${!tpOK?'#ffb0b0':rr<S.rrMin?'var(--warn)':'var(--good)'}">${!tpOK?"TP du mauvais côté !":num(rr)+(rr<S.rrMin?" — sous ton minimum de "+num(S.rrMin,1):" ✓")}</span></div>
+       <div class="calc-row"><span class="k">Gain si le TP est touché (net spread)</span><span class="v pos">${tpOK?eur(gainTP):"–"}</span></div>`
+     : `<div class="calc-row"><span class="k">RR / gain au TP</span><span class="v" style="color:var(--warn)">entre un TP (ou bouton « TP auto »)</span></div>`) +
+    `<div class="calc-row"><span class="k">Coût du spread</span><span class="v">${eur(spreadEUR)}</span></div>
+     <div class="calc-row"><span class="k">Point mort réel (entrée + spread)</span><span class="v">${num(be)}</span></div>`;
+  const planTxt = `${inst.name} — ${c2Sens.toUpperCase()}\nLot : ${lot.toFixed(2)}\nEntrée : ${num(e)}\nStop loss : ${num(s)}\nTake profit : ${isNaN(tp)?"—":num(tp)}\nRisque : ${eur(riskEUR)} (${pct(riskEUR/bal)})${impossible?"\n⚠ EN VIOLATION DU PLAFOND — ne pas prendre":""}`;
+  plan.innerHTML = `<h3>Plan d'ordre MT5</h3>
+    <pre style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:12.5px;white-space:pre-wrap;font-family:ui-monospace,monospace">${esc(planTxt)}</pre>
+    <button class="btn btn-ghost" id="c2-copy" style="margin-top:8px">Copier le plan</button>
+    <span class="mini" id="c2-copied" style="margin-left:8px"></span>`;
+  $("c2-copy").onclick=()=>{
+    (navigator.clipboard?navigator.clipboard.writeText(planTxt):Promise.reject()).then(
+      ()=>{$("c2-copied").textContent="copié ✓"; setTimeout(()=>{const el=$("c2-copied"); if(el) el.textContent="";},2000);},
+      ()=>{$("c2-copied").textContent="copie impossible — sélectionne le texte";});
+  };
+}
+
+/* ================= PARAMÈTRES ================= */
+function fillSettings(){
+  $("s-balance").value=S.startBalance; $("s-start").value=S.startDate; $("s-days").value=S.testDays; $("s-rr").value=S.rrMin;
+  $("s-t1").value=S.tiers[1]*100; $("s-t2").value=S.tiers[2]*100; $("s-t3").value=S.tiers[3]*100;
+  $("s-cap").value=S.cap*100; $("s-daily").value=S.dailyLossMax*100;
+  $("s-openrisk").value=S.openRiskMax*100; $("s-maxopen").value=S.maxOpen;
+  $("s-src1").value=S.sources[0]||""; $("s-src2").value=S.sources[1]||""; $("s-src3").value=S.sources[2]||"";
+  $("s-gmin").value=S.grid.minTrades; $("s-gexp").value=S.grid.expR; $("s-gnet").value=S.grid.netPct*100;
+  $("s-gdd").value=S.grid.ddMax*100; $("s-gpf").value=S.grid.pf; $("s-grule").value=S.grid.ruleOk*100;
+  let h=`<tr><th>Instrument</th><th class="num">Valeur du point (€)</th><th class="num">Lot min</th><th class="num">Spread (pts)</th><th class="num">Stop typique (pts)</th><th class="num">Stop mini broker (pts)</th></tr>`;
+  S.instruments.forEach((it,k)=>{
+    h+=`<tr><td>${esc(it.name)}</td>
+      <td class="num"><input type="number" step="any" id="si-vp-${k}" value="${it.vp}" style="width:90px"></td>
+      <td class="num"><input type="number" step="0.01" id="si-lm-${k}" value="${it.lotMin}" style="width:70px"></td>
+      <td class="num"><input type="number" step="any" id="si-sp-${k}" value="${it.spread}" style="width:70px"></td>
+      <td class="num"><input type="number" step="any" id="si-st-${k}" value="${it.stopTyp}" style="width:70px"></td>
+      <td class="num"><input type="number" step="any" id="si-sm-${k}" value="${it.stopMin||0}" style="width:70px"></td></tr>`;
+  });
+  $("instSettings").innerHTML=h;
+}
+$("saveSettings").addEventListener("click",()=>{
+  S.startBalance=parseFloat($("s-balance").value)||100;
+  S.startDate=$("s-start").value||S.startDate;
+  S.testDays=parseInt($("s-days").value)||90;
+  S.rrMin=parseFloat($("s-rr").value)||2;
+  S.tiers={1:(parseFloat($("s-t1").value)||0.5)/100, 2:(parseFloat($("s-t2").value)||1)/100, 3:(parseFloat($("s-t3").value)||1.5)/100};
+  S.cap=(parseFloat($("s-cap").value)||2)/100;
+  S.dailyLossMax=(parseFloat($("s-daily").value)||4)/100;
+  S.openRiskMax=(parseFloat($("s-openrisk").value)||3)/100;
+  S.maxOpen=parseInt($("s-maxopen").value)||2;
+  S.sources=[$("s-src1").value||"Moi",$("s-src2").value||"Signal 1",$("s-src3").value||"Signal 2"];
+  S.grid={minTrades:parseInt($("s-gmin").value)||40, expR:parseFloat($("s-gexp").value)||0.1,
+    netPct:(parseFloat($("s-gnet").value)||10)/100, ddMax:(parseFloat($("s-gdd").value)||15)/100,
+    pf:parseFloat($("s-gpf").value)||1.3, ruleOk:(parseFloat($("s-grule").value)||90)/100};
+  S.instruments.forEach((it,k)=>{
+    it.vp=parseFloat($(`si-vp-${k}`).value)||it.vp;
+    it.lotMin=parseFloat($(`si-lm-${k}`).value)||it.lotMin;
+    it.lotStep=it.lotMin;
+    it.spread=parseFloat($(`si-sp-${k}`).value)||it.spread;
+    it.stopTyp=parseFloat($(`si-st-${k}`).value)||it.stopTyp;
+    const sm=parseFloat($(`si-sm-${k}`).value); it.stopMin=isNaN(sm)?(it.stopMin||0):sm;
+  });
+  markDirty(); initForm(); initCalc2(); renderAll();
+  alert("Paramètres appliqués.");
+});
+
+/* ================= SAUVEGARDE ================= */
+function download(name, content, type){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([content],{type}));
+  a.download=name; a.click(); URL.revokeObjectURL(a.href);
+}
+$("exportJson").addEventListener("click",()=>{
+  download(`trading_sauvegarde_${todayStr()}.json`, JSON.stringify({version:1, settings:S, trades},null,1), "application/json");
+  clearDirty(); renderDataStatus(computeAll());
+});
+$("importFile").addEventListener("change",ev=>{
+  const file=ev.target.files[0]; if(!file) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ try{
+      const d=JSON.parse(rd.result);
+      if(!d.settings||!Array.isArray(d.trades)) throw new Error("format");
+      S=Object.assign(JSON.parse(JSON.stringify(DEFAULTS)), d.settings);
+      trades=d.trades;
+      clearDirty(); fillSettings(); initForm(); initCalc2(); renderAll();
+      alert(`Sauvegarde chargée : ${trades.length} trade(s).`);
+    }catch(e){ alert("Fichier invalide : ce n'est pas une sauvegarde de cette application."); }
+  };
+  rd.readAsText(file);
+});
+$("exportCsv").addEventListener("click",()=>{
+  const st=computeAll();
+  const head=["#","Statut","Date","Instrument","Sens","Conviction","Entrée","Stop","TP","Sortie","Lot","Commission","RR planifié","Résultat brut €","Coût spread €","Résultat net €","Risque €","R réalisé","Solde €","Drawdown %","BE ?","Source","Violation","Notes"];
+  const lines=[head.join(";")];
+  st.rows.forEach((x,i)=>lines.push([i+1,"Clôturé",x.date,x.instrument,x.sens,x.conv,x.entry,x.stop,x.tp??"",x.exit,x.lot,x.comm||0,
+    x.rr!=null?x.rr.toFixed(2):"",x.gross.toFixed(2),x.spreadCost.toFixed(2),x.net.toFixed(2),x.riskEUR.toFixed(2),x.r.toFixed(2),
+    x.bal.toFixed(2),(x.ddPct*100).toFixed(1),x.be?"OUI":"",x.source||"",x.violation?"OUI":"",(x.note||"").replace(/;/g,",")].join(";")));
+  st.openRows.forEach(x=>lines.push(["",  "Ouvert",x.date,x.instrument,x.sens,x.conv,x.entry,x.stop,x.tp??"","",x.lot,x.comm||0,
+    x.rr!=null?x.rr.toFixed(2):"","","","",x.riskEUR.toFixed(2),"","","",x.be?"OUI":"",x.source||"",x.violation?"OUI":"",(x.note||"").replace(/;/g,",")].join(";")));
+  download(`journal_trading_${todayStr()}.csv`,"﻿"+lines.join("\n"),"text/csv;charset=utf-8");
+});
+$("resetAll").addEventListener("click",()=>{
+  if(!confirm("Tout effacer ? Trades ET paramètres. Irréversible."))return;
+  if(!confirm("Vraiment sûr ? Pense à exporter d'abord."))return;
+  S=JSON.parse(JSON.stringify(DEFAULTS)); trades=[]; clearDirty(); fillSettings(); initForm(); renderAll();
+});
+function renderDataStatus(st){
+  $("dataStatus").innerHTML=`${st.n} trade(s) · sauvegardé auto sur cet appareil · solde ${eur(st.balance)} · ${dirty?'<span style="color:var(--warn)">modifications NON exportées</span>':'<span style="color:var(--good)">tout est exporté</span>'}`;
+}
+
+/* ================= GUIDE ================= */
+function renderGuide(){
+  const g=goldStatus(computeAll());
+  $("guideContent").innerHTML = `
+<div class="banner info"><b>Cadre v2 — compte RÉEL 100-200 €, adapté aux vraies specs Vantage/MT5.</b> Les règles v1 (démo 90 j, plafond 2 %) étaient mathématiquement intenables avec les minimums du broker : lot mini 0,1 sur DJ30 et NAS100. Ce cadre v2 garde la même logique de survie, recalibrée sur la réalité. 2 sources de signaux max, journal complet, grille 90 jours inchangées.</div>
+
+<details open><summary><span class="rule-num">A</span> La réalité du broker — pourquoi le cadre a changé</summary><div class="body">
+<p>Specs Vantage confirmées sur MT5 (tes captures du 25/07) :</p>
+<ul>
+<li><b>OR (XAUUSD)</b> : contrat 100 oz, lot mini 0,01 → <b>~1 € par point</b> ($1 de mouvement). Stop typique 5 pts = 5 €. Distance de stop mini broker : 0,20 (20 points MT5).</li>
+<li><b>DJ30</b> : contrat 1, <b>lot mini 0,1</b> → ~0,10 € par point. Stop réaliste 80-150 pts = <b>8-15 €</b>. Verrouillé sous ~300-500 € de solde.</li>
+<li><b>NAS100</b> : <b>lot mini 0,1</b> aussi. Stop réaliste 40-80 pts = 4-8 €. Verrouillé à 100 €, limite à 200 €.</li>
+<li><b>BTC</b> : lot mini 0,01 (contrat à confirmer par capture Spécification). Si contrat = 1 BTC : ~0,01 € par dollar de mouvement → stop 300-500 $ = 3-5 €. Potentiellement le plus granulaire après l'OR.</li>
+</ul>
+<p><b>Conséquence :</b> à 100 €, seuls l'OR (stops très serrés ≤ 3 $) et peut-être BTC passent sous le plafond. À <b>200 €</b>, OR et BTC deviennent confortables. DJ30 reste interdit jusqu'à ~400-500 €. Le tableau « ce que ton solde permet » du Calculateur suit ça en direct.</p>
+</div></details>
+
+<details open><summary><span class="rule-num">C</span> Les règles v2 (rappel permanent)</summary><div class="body">
+<ul>
+<li><b>1. Taille par conviction, plafonnée</b> : 1 % (pas sûr) / 1,5 % (sûr) / 2 % (très sûr). Plafond absolu <b>3 %</b>. C'est déjà 1,5× ce qu'un pro se permet — la concession faite aux minimums du broker, pas une invitation à monter.</li>
+<li><b>2. Stop systématique</b>, placé avec l'ordre. Jamais déplacé pour élargir la perte.</li>
+<li><b>3. RR ≥ 2</b> : le TP vise au moins 2× le risque. À 2:1, 40 % de réussite suffit pour être positif — c'est LE levier de gains, pas la taille.</li>
+<li><b>4. Perte max journalière 6 %</b> (= 2 pertes pleines) : atteinte → MT5 fermé jusqu'à demain. L'app te bloque et te le rappelle.</li>
+<li><b>5. Deux sources de signaux max</b> (GOLDFXCC + 1 autre max), tracées trade par trade. Leur revenu certain, c'est ton abonnement — le tableau « Par source » tranchera sur les chiffres.</li>
+<li><b>6. Perte max hebdomadaire 10 %</b> : atteinte → plus aucun trade de la semaine, revue complète avec moi avant de reprendre. Et <b>jamais de re-dépôt pour « se refaire »</b> — un re-dépôt après pertes = signal STOP.</li>
+<li><b>7. Une position par instrument, 2 positions ouvertes maximum en même temps</b>. US30 et NASDAQ sont corrélés (~0,85+) : même sens en même temps = un seul pari doublé. L'app te le signale.</li>
+<li><b>8. Risque total ouvert ≤ 4 %</b>, à tout instant — le calculateur et le formulaire en tiennent compte automatiquement.</li>
+<li><b>9. BE à +1R, gestion écrite à l'avance</b> (section C2) — jamais de décision « au feeling » en cours de trade.</li>
+</ul>
+<p class="mini">Maths de survie : à 3 % par trade, une série de 10 pertes = −26 % du compte. À 5 % par trade, la même série = −40 %. Les séries de 10 pertes ARRIVENT, même avec une bonne stratégie. C'est ça, la vraie raison du plafond.</p>
+</div></details>
+
+<details><summary><span class="rule-num">C2</span> Point mort (BE) et laisser courir un trade</summary><div class="body">
+<p>Un trade peut désormais rester <b>ouvert</b> dans l'app (laisse le champ « sortie » vide en l'enregistrant) — tu le clôtures plus tard depuis le Dashboard ou le Journal, bouton « Clôturer / gérer ».</p>
+<p><b>Stop au point mort (BE) — dès que le trade atteint +1R de profit flottant :</b> déplace le stop au prix d'entrée + spread (le vrai point mort, pas juste l'entrée brute). Ça élimine le risque sur un trade gagnant qui repart en perte. Coche « stop déplacé au point mort » et note le nouveau stop dans l'app pour garder une trace — ce n'est pas automatique dans MT5, c'est toi qui déplaces l'ordre.</p>
+<p><b>Laisser courir au-delà de 2R — deux façons de faire, choisis-en UNE par écrit avant de commencer :</b></p>
+<ul>
+<li><b>Mode simple (recommandé pour débuter, ≤ 20 premiers trades) :</b> TP fixe à 2R, clôture complète, zéro ambiguïté. C'est le mode que le calculateur propose par défaut.</li>
+<li><b>Mode avancé (une fois à l'aise) :</b> prise partielle de 50 % du lot à 2R (ça sécurise ton RR minimum et transforme le trade en « argent de la maison »), puis stop suiveur sur le reste — sur la structure (dernier plus bas significatif en achat / plus haut en vente) ou un multiple de l'ATR. Note la clôture partielle dans le champ Notes du trade.</li>
+</ul>
+<p>Ce que tu ne fais JAMAIS : décider « au feeling », en cours de trade, d'annuler le stop parce que « ça va remonter ». C'est la porte d'entrée vers le compte qui explose — exactement la règle n°2 (stop jamais élargi), qui s'applique aussi aux positions ouvertes.</p>
+</div></details>
+
+<details><summary><span class="rule-num">D</span> Horaires & sessions (heure de Paris)</summary><div class="body">
+<ul>
+<li><b>US30 / NASDAQ</b> : ouverture de New York à <b>15h30</b>. Fenêtre la plus propre : <b>15h30–17h30</b>. Après 20h le volume meurt ; évite aussi 12h–14h (creux).</li>
+<li><b>OR</b> : plus actif au chevauchement Londres/New York, <b>14h30–17h30</b>.</li>
+<li><b>Vendredi soir</b> : pas de nouvelle position après 20h — les gaps du dimanche soir traversent les stops.</li>
+<li>Ces horaires sont des repères classiques, pas des lois. Ton journal te dira dans quelles heures TU es rentable — c'est une des raisons de le tenir.</li>
+</ul></div></details>
+
+<details><summary><span class="rule-num">E</span> Les news qui tuent les petits comptes</summary><div class="body">
+<p>À ces moments, le spread s'écarte brutalement et les stops sautent avec slippage. <b>Aucune position ouverte 15 min avant/après :</b></p>
+<ul>
+<li><b>NFP</b> (emploi US) : 1er vendredi du mois, 14h30.</li>
+<li><b>CPI</b> (inflation US) : mensuel, 14h30.</li>
+<li><b>FOMC</b> (taux de la Fed) : 8×/an, 20h00 + conférence 20h30.</li>
+<li>GDP, PPI, discours de la Fed : mêmes précautions.</li>
+</ul>
+<p>Mets un calendrier économique (celui de TradingView suffit) dans ta routine du matin. La checklist pré-trade de l'app inclut ce point.</p>
+</div></details>
+
+<details><summary><span class="rule-num">F</span> Routine quotidienne</summary><div class="body">
+<p><b>Avant la session (10 min)</b> : calendrier éco du jour → niveaux clés sur TradingView → relire la dernière note du journal → vérifier le solde et la limite journalière dans l'app.</p>
+<p><b>Pendant</b> : checklist pré-trade AVANT chaque entrée → ticket complet (entrée+stop+TP) → une fois le trade ouvert, on ne touche plus au stop sauf pour le protéger.</p>
+<p><b>Après la session (5 min)</b> : consigner chaque trade ici, avec la note honnête (qu'est-ce que je ressentais ?) → export JSON → fermer MT5.</p>
+<p><b>Dimanche (15 min)</b> : revue de la semaine — Dashboard par instrument et par source, relire les notes des pertes. Une leçon par semaine, écrite.</p>
+</div></details>
+
+<details><summary><span class="rule-num">G</span> Les erreurs qui ruinent les débutants (dans l'ordre où elles arrivent)</summary><div class="body">
+<ul>
+<li><b>Sur-taille après une perte</b> (« je me refais ») — la n°1. C'est pour ça que le plafond est absolu.</li>
+<li><b>Enlever ou élargir le stop</b> « pour laisser respirer » — transforme une petite perte en compte cramé.</li>
+<li><b>Sur-trading</b> : 15 trades/jour par ennui. 2–3 bons setups par jour, c'est déjà beaucoup.</li>
+<li><b>Changer de stratégie chaque semaine</b> — aucune n'a le temps de prouver quoi que ce soit. 90 jours, UNE approche.</li>
+<li><b>Croire une série de 5 gains</b> — à 50/50, 5 gains d'affilée arrivent 3 fois sur 100 par pur hasard. D'où les 40 trades minimum.</li>
+<li><b>Suivre 6 canaux Telegram</b> — signaux contradictoires, zéro apprentissage, impossible de savoir qui vaut quoi. Deux, tracés, jugés sur 90 jours.</li>
+</ul></div></details>
+
+<details><summary><span class="rule-num">H</span> Paliers de capital (réels, recalculés sur les specs Vantage)</summary><div class="body">
+<ul>
+<li><b>100 €</b> : OR uniquement avec stops ≤ 3 $ (très serré, spread lourd) — ou BTC si ses specs le confirment. Une seule position ouverte à la fois recommandé.</li>
+<li><b>200 €</b> : OR avec stops normaux 4-6 $ et BTC deviennent jouables à ≤ 3 %. NAS100 à la limite exacte (0,1 lot × stop 60 pts = 6 € = 3 %).</li>
+<li><b>~400-500 €</b> : NAS100 confortable, DJ30 se débloque (0,1 lot × stop 100 pts = 10 € = 2-2,5 %).</li>
+<li><b>Croissance du compte uniquement par les gains</b> — jamais de re-dépôt pour « se refaire » : un re-dépôt après pertes, c'est le signal STOP par excellence.</li>
+</ul></div></details>
+
+<details><summary><span class="rule-num">I</span> Ce que dit la statistique (le fait de base)</summary><div class="body">
+<p><b>74–89 % des comptes CFD particuliers perdent de l'argent</b> (chiffre réglementaire affiché par les brokers eux-mêmes, Vantage inclus). Le vendeur de signaux, lui, gagne son abonnement quel que soit ton résultat.</p>
+<p>Ce test à 90 jours est ta réponse personnelle à cette statistique, pour un coût de 0 €. Si la grille dit STOP, ce n'est pas un échec : c'est une information qui t'a coûté 0 € au lieu de te coûter ton capital. La plupart des gens paient pour l'apprendre.</p>
+</div></details>
+
+<details><summary><span class="rule-num">J</span> Comment je t'assiste sur les trades (à lire une fois)</summary><div class="body">
+<p>Envoie-moi ce que tu veux — capture d'écran du graphique, plan de trade, doute sur un setup, question sur un signal Telegram. Voici ce que je fais et ce que je ne fais pas :</p>
+<ul>
+<li><b>Je fais :</b> vérifier ton plan contre tes propres règles (RR, taille de position, plafond, positions déjà ouvertes) ; expliquer un indicateur, une figure chartiste, un concept ; t'aider à lire objectivement le journal (où tu perds, où tu gagnes, quelle source vaut quelque chose) ; repérer les signaux de dérive dans ce que tu écris (revenge trading, sur-confiance, envie de passer en réel trop tôt) et te les signaler directement.</li>
+<li><b>Je ne fais pas :</b> te dire si le marché va monter ou descendre, valider un signal Telegram comme « bon » ou « mauvais » avant qu'il ait joué, ou te donner un conseil d'investissement personnalisé. Ce n'est pas de la prudence excessive — c'est exactement la limite que tu as toi-même posée au tout début : « je ne te demande pas de conseil d'investissement, je veux un cadre de test et de mesure ». Je la tiens.</li>
+<li><b>La décision d'entrée reste la tienne</b>, construite sur ton analyse TradingView, tes indicateurs, ou tes 2 sources de signaux. Mon rôle : que cette décision respecte le cadre, pas la remplacer.</li>
+</ul>
+<p>Si un jour ma réponse ressemble à une prédiction de marché déguisée, dis-le-moi — ce serait une dérive de ma part, pas une aide.</p>
+</div></details>`;
+}
+
+/* ================= NAVIGATION ================= */
+function showTab(name){
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===name));
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.id==="tab-"+name));
+  if(name==="guide") renderGuide();
+  if(name==="new") renderCalc(computeAll());
+  if(name==="calc") renderCalc2(computeAll());
+  if(name==="week") renderWeek();
+  if(name==="review") renderReview(computeAll());
+}
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+
+/* ================= INIT ================= */
+$("addEvent").addEventListener("click",()=>{
+  S.events.push({dt:"", label:"Nouvelle news — mets la date et le libellé"});
+  markDirty(); renderWeek();
+});
+loadSaved(); fillSettings(); initForm(); initCalc2(); renderAll(); renderGuide();
+</script>
+</body>
+</html>
