@@ -1,8 +1,8 @@
 // Service worker Suivi Vincent — cache le shell de l'app pour l'ouverture hors-ligne.
 // Navigation : réseau d'abord (dernière version en ligne), repli sur le cache hors-ligne.
 // Requêtes Supabase et cross-origin : jamais interceptées (laissées au réseau).
-const CACHE = 'suivi-vincent-v5';
-const SHELL = ['./', './index.html', './manifest.json', './sc31.html', './jardin31.html', './trading.html'];
+const CACHE = 'suivi-vincent-v6';
+const SHELL = ['./', './index.html', './manifest.json', './sc31.html', './jardin31.html', './trading.html', './otium.html', './otium-produit.html'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
 });
@@ -32,4 +32,3 @@ self.addEventListener('fetch', (e) => {
     }).catch(() => m))
   );
 });
- 
