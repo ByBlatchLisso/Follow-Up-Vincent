@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>OTIUM — Suivi de lancement</title>
+<style>
+  :root{
+    --os:#F2EDE4; --sable:#D9C7AE; --chene:#B08D57; --graphite:#4A4A48;
+    --ink:#2B2A28; --body:#3A3936; --argile:#A9633B; --blanc:#FDFBF7;
+    --mute:#8A857D; --ligne:#E4DCCE; --vert:#6E8F6C; --rouge:#B5573E;
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:var(--sans);color:var(--body);background:var(--os);line-height:1.55;-webkit-font-smoothing:antialiased;padding-bottom:40px}
+  .wrap{max-width:760px;margin:0 auto;padding:0 18px}
+
+  header{background:var(--ink);color:var(--blanc);padding:26px 18px 20px}
+  header .h-in{max-width:760px;margin:0 auto}
+  header .logo{font-family:var(--serif);font-weight:700;font-size:22px;letter-spacing:.3em}
+  header .tag{margin-top:6px;font-size:13px;color:#C9C3B6}
+  header .back{display:inline-block;margin-top:14px;font-size:12.5px;color:#C9C3B6;text-decoration:none;border-bottom:1px solid #55534C;padding-bottom:1px}
+
+  .status{margin:16px 18px 0;max-width:724px;margin-left:auto;margin-right:auto;background:var(--blanc);border-radius:18px;padding:18px 20px;box-shadow:0 2px 10px rgba(43,42,40,.06)}
+  .status .verdict{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--vert);background:rgba(110,143,108,.12);padding:4px 12px;border-radius:99px}
+  .status h1{font-family:var(--serif);font-size:22px;color:var(--ink);margin-top:10px}
+  .status .sub{margin-top:5px;font-size:13.5px;color:var(--mute)}
+  .stat-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+  .stat-mini div{background:var(--os);border-radius:12px;padding:12px 10px;text-align:center}
+  .stat-mini b{display:block;font-family:var(--serif);font-size:19px;color:var(--ink)}
+  .stat-mini span{display:block;margin-top:3px;font-size:10.5px;color:var(--mute);line-height:1.3}
+
+  nav.tabs{position:sticky;top:0;z-index:20;background:var(--os);border-bottom:1px solid var(--ligne);margin-top:18px;overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
+  nav.tabs .tin{max-width:760px;margin:0 auto;padding:0 12px;display:flex;gap:4px}
+  nav.tabs button{flex:0 0 auto;padding:12px 14px;border:none;background:none;font-family:inherit;font-size:13px;font-weight:700;color:var(--mute);border-bottom:2.5px solid transparent;cursor:pointer}
+  nav.tabs button.active{color:var(--argile);border-bottom-color:var(--argile)}
+
+  main{max-width:760px;margin:0 auto;padding:20px 18px 10px}
+  .panel{display:none}
+  .panel.active{display:block}
+
+  .card{background:var(--blanc);border-radius:16px;padding:18px 18px;margin-bottom:14px;box-shadow:0 2px 8px rgba(43,42,40,.05)}
+  .card h2{font-family:var(--serif);font-size:17px;color:var(--ink);margin-bottom:10px}
+  .card h3{font-size:12.5px;font-weight:800;letter-spacing:.04em;color:var(--argile);text-transform:uppercase;margin:14px 0 6px}
+  .card h3:first-child{margin-top:0}
+  .card p{font-size:14px;color:var(--body);margin-bottom:8px}
+  .card p:last-child{margin-bottom:0}
+  .muted{color:var(--mute);font-size:12.5px}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 4px}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);padding:6px 8px;border-bottom:1px solid var(--ligne)}
+  td{padding:9px 8px;border-bottom:1px solid var(--ligne);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.hi{color:var(--ink);font-weight:700}
+
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--os);color:var(--graphite)}
+  .tag.go{background:rgba(110,143,108,.15);color:var(--vert)}
+  .tag.wait{background:rgba(169,99,59,.15);color:var(--argile)}
+
+  .ck{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--ligne)}
+  .ck:last-child{border-bottom:none}
+  .ck input{margin-top:3px;width:18px;height:18px;accent-color:var(--argile);flex:0 0 auto}
+  .ck label{font-size:14px;color:var(--body);cursor:pointer}
+  .ck.done label{color:var(--mute);text-decoration:line-through}
+
+  .gate{margin-top:10px;padding:10px 12px;background:var(--os);border-left:3px solid var(--argile);border-radius:0 10px 10px 0;font-size:12.5px;color:var(--graphite)}
+
+  .swatches{display:flex;gap:10px;margin:8px 0}
+  .sw{flex:1;height:46px;border-radius:10px;display:flex;align-items:flex-end;padding:5px 7px;font-size:9.5px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+
+  .btn{display:inline-block;width:100%;text-align:center;padding:13px;border-radius:12px;border:none;background:var(--ink);color:var(--blanc);font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer;text-decoration:none;box-sizing:border-box}
+  .btn:active{opacity:.85}
+  .btn.ghost{background:var(--os);color:var(--ink);border:1px solid var(--ligne)}
+
+  textarea{width:100%;min-height:130px;border:1px solid var(--ligne);border-radius:12px;padding:12px;font-family:inherit;font-size:13.5px;color:var(--body);background:var(--os);resize:vertical}
+  textarea:focus{outline:2px solid var(--argile);outline-offset:1px}
+
+  .save-note{font-size:11px;color:var(--mute);margin-top:6px;text-align:right}
+  .journal-entry{border-bottom:1px solid var(--ligne);padding:10px 0;font-size:13px}
+  .journal-entry:last-child{border-bottom:none}
+  .journal-entry .d{font-size:10.5px;color:var(--mute);font-weight:700;margin-bottom:3px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:420px){.row2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-in">
+    <div class="logo">OTIUM</div>
+    <div class="tag">Coffre de déconnexion premium · Suivi de lancement</div>
+    <a class="back" href="javascript:window.close()">‹ Retour au Suivi Vincent</a>
+  </div>
+</header>
+
+<div class="status">
+  <span class="verdict">Go conditionnel</span>
+  <h1>189 € · marge brute 66 %</h1>
+  <div class="sub">En attente de validation sourcing (devis réels) — créé le 25/07/2026.</div>
+  <div class="stat-mini">
+    <div><b>44 500 €</b><span>Capital de départ (dont stock 500u.)</span></div>
+    <div><b>36 u./mois</b><span>Seuil de rentabilité</span></div>
+    <div><b>36 u.</b><span>Modèle central : ~3 434 u. / an 1</span></div>
+  </div>
+</div>
+
+<nav class="tabs">
+  <div class="tin" id="tabbar"></div>
+</nav>
+
+<main>
+  <div class="panel" id="p-vue">
+    <div class="card">
+      <h2>Le produit</h2>
+      <p>Coffre à minuterie premium pour smartphone. Aluminium anodisé + chêne massif FSC. Minuterie électronique cachée (5 min–24 h, sans surpassement). Objet de chevet, prêt à offrir.</p>
+      <p class="muted">Usage principal : rituel du soir (sommeil, présence) · secondaire : deep work.</p>
+    </div>
+    <div class="card">
+      <h2>Décision clé (contredit le brief)</h2>
+      <p>Le plancher de 80 € du brief est économiquement mort avec des matériaux nobles (COGS ≤ 20 € requis = plastique). Zone gagnante : 150–250 €.</p>
+      <p><b>Prix recommandé : 189 €</b> (SKU héros unique, sans abonnement). À 189 € (157,5 € HT), marge brute 66 % à COGS 48 € + 5 € emballage.</p>
+    </div>
+    <div class="card">
+      <h2>Verdict — GO conditionnel</h2>
+      <h3>Marché</h3>
+      <p>Angle mort statistique = opportunité. Proxys : digital detox 2–2,7 Md$ (CAGR 13–24 %), feature phones 52,4 Md$. Traction hardware prouvée (Yondr ~5 M$ CA 2024).</p>
+      <h3>Concurrence</h3>
+      <p>Bas de marché saturé (15–60 €, plastique/app). Premium/design européen 80–250 € quasi vide (seuls Aro, Yondr — US ; Designcraft — rustique US).</p>
+      <h3>Vents porteurs</h3>
+      <p>Haidt « Anxious Generation », interdiction portable collège France (rentrée 2025), bans réseaux &lt; 16 ans (Australie, UE).</p>
+    </div>
+  </div>
+
+  <div class="panel" id="p-sourcing">
+    <div class="card">
+      <h2>3 routes de sourcing</h2>
+      <table>
+        <tr><th>Route</th><th>COGS</th><th>Condition</th></tr>
+        <tr><td class="hi">A — Alu anodisé ODM Asie</td><td>28–50 €</td><td>Viable dès ~150 €</td></tr>
+        <tr><td class="hi">C — Hybride (module Asie + finition Europe)</td><td>40–85 €</td><td>Récit « Assembled in EU »</td></tr>
+        <tr><td class="hi">B — 100 % Europe</td><td>60–140 €</td><td>Ne tient qu'à ≥ 229 €</td></tr>
+      </table>
+      <p class="muted">Fournisseurs identifiés : Tucen, Yosec, module timer KS1 (shkuntu / Made-in-China). Module timer Asie ≈ 7,50 $ réel.</p>
+    </div>
+    <div class="card">
+      <h2>RFQ — à envoyer à 5 fournisseurs</h2>
+      <div id="ck-rfq"></div>
+      <div class="gate">Porte de phase 1 : ≥ 2 devis reçus avec COGS ≤ 48 €/unité avant tout engagement (prototype, MOQ 500).</div>
+    </div>
+  </div>
+
+  <div class="panel" id="p-marque">
+    <div class="card">
+      <h2>OTIUM</h2>
+      <p>Latin : temps libre contemplatif, opposé de <i>negotium</i>. Baseline : « Le temps vous revient. »</p>
+      <p>Positionnement anti-app, anti-abonnement, anti-plastique, anti-institutionnel — jamais anti-téléphone (« le téléphone est un excellent outil, il n'a pas besoin d'être présent à chaque instant »).</p>
+      <p class="muted">Registre : Apple × Ferm Living × Oura. Toujours écrire « OTIUM » seul, jamais « OTIUM Box ».</p>
+      <h3>Palette</h3>
+      <div class="swatches">
+        <div class="sw" style="background:#B7AD98">Os F2EDE4</div>
+        <div class="sw" style="background:#C7B190">Sable D9C7AE</div>
+        <div class="sw" style="background:#4A4A48">Graphite</div>
+        <div class="sw" style="background:#A9633B">Argile</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>⚠️ Clearance marque — bloquant</h2>
+      <p>Nom déjà utilisé en hôtellerie/spa. Clearance EUIPO requise, classes 9 (électronique) + 20 (ameublement/bois).</p>
+      <div id="ck-marque"></div>
+      <p class="muted">Alternatives de repli si clearance bloquée : <b>VESPER</b>, <b>SILL</b>.</p>
+    </div>
+  </div>
+
+  <div class="panel" id="p-chiffres">
+    <div class="card">
+      <h2>Modèle — scénario central</h2>
+      <table>
+        <tr><td>Capital de départ</td><td class="hi">~44 500 € (dont stock 500u. = 26 500 €)</td></tr>
+        <tr><td>Contribution avant pub</td><td class="hi">80,70 €/unité</td></tr>
+        <tr><td>Break-even</td><td class="hi">36 u./mois</td></tr>
+        <tr><td>Remboursement setup</td><td class="hi">~990 unités</td></tr>
+        <tr><td>Année 1</td><td class="hi">3 434 u. · 541 k€ CA · ~120 k€ EBITDA (22 %)</td></tr>
+        <tr><td>Saisonnalité</td><td class="hi">Pic Noël ×1,8</td></tr>
+        <tr><td>CAC cible</td><td class="hi">65 € (mois 1-3) puis 50 €</td></tr>
+      </table>
+      <p class="muted">Hypothèses modifiables — voir OTIUM_Modele_financier.xlsx (4 onglets, 210 formules).</p>
+    </div>
+  </div>
+
+  <div class="panel" id="p-plan">
+    <div class="card">
+      <h2>Plan 90 jours — 3 portes</h2>
+      <h3>Porte 1 — J1–30 · Valider</h3>
+      <p>Clearance + RFQ + landing liste d'attente (300–500 € Meta).</p>
+      <div class="gate">Porte : ≥ 2 devis avec COGS ≤ 48 €.</div>
+      <h3>Porte 2 — J31–60 · Construire</h3>
+      <p>Prototype validé, MOQ 500, boutique, flows email, 10 créas, CE lancé.</p>
+      <h3>Porte 3 — J61–90 · Lancer</h3>
+      <p>Liste d'attente puis paid.</p>
+      <div class="gate">Porte de scale : CAC ≤ 65 € ET conversion ≥ 1,5 %.</div>
+    </div>
+    <div class="card">
+      <h2>Prochaine action</h2>
+      <p>Envoyer le RFQ (Dossier §5) à 5 fournisseurs + lancer la clearance EUIPO. Rien d'autre ne débloque avant les devis.</p>
+    </div>
+  </div>
+
+  <div class="panel" id="p-livrables">
+    <div class="card">
+      <h2>Livrables</h2>
+      <p>1. OTIUM_Dossier_de_lancement.docx (13 p.) — marché, concept, économie, sourcing+RFQ, marque, copy, DA.</p>
+      <p>2. Page produit V2 — maquette complète type Apple.</p>
+      <p>3. OTIUM_Modele_financier.xlsx — 4 onglets, 210 formules.</p>
+      <p>4. OTIUM_Playbook_90_jours.docx (9 p.) — roadmap, plan Meta, flows Klaviyo, structure Shopify, KPI, conformité UE.</p>
+      <p class="muted">Rappels de documents (sur ton Drive / ordinateur) — pas de fichiers hébergés ici, sauf la page produit ci-dessous.</p>
+    </div>
+    <a class="btn" href="./otium-produit.html" target="_blank">🖼️ Voir la page produit V2 →</a>
+  </div>
+
+  <div class="panel" id="p-journal">
+    <div class="card">
+      <h2>Journal — décisions & avancement</h2>
+      <textarea id="journalTa" placeholder="Devis reçus, retours clearance EUIPO, décisions, avancement…"></textarea>
+      <div class="save-note" id="journalSaved"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+  var OTM_KEY = "OTM:v1";
+  function loadState(){
+    try { return JSON.parse(localStorage.getItem(OTM_KEY) || "{}"); } catch(e){ return {}; }
+  }
+  function saveState(s){
+    try { localStorage.setItem(OTM_KEY, JSON.stringify(s)); } catch(e){}
+  }
+  var state = loadState();
+  if(!state.checks) state.checks = {};
+  if(typeof state.journal !== "string") state.journal = "";
+
+  function persist(){ saveState(state); }
+
+  var RFQ_ITEMS = [
+    "RFQ envoyé — fournisseur 1 (Tucen)",
+    "RFQ envoyé — fournisseur 2 (Yosec)",
+    "RFQ envoyé — fournisseur 3 (module KS1 / shkuntu)",
+    "RFQ envoyé — fournisseur 4",
+    "RFQ envoyé — fournisseur 5",
+    "Comparatif des devis reçus (COGS visé ≤ 48 €)",
+  ];
+  var MARQUE_ITEMS = [
+    "Recherche d'antériorité EUIPO — classe 9 (électronique)",
+    "Recherche d'antériorité EUIPO — classe 20 (ameublement/bois)",
+    "Dépôt de la marque (si clearance OK)",
+    "Décision alternative de nom si clearance bloquée",
+  ];
+
+  function buildChecklist(containerId, items, prefix){
+    var box = document.getElementById(containerId);
+    items.forEach(function(label, i){
+      var id = prefix + i;
+      var row = document.createElement("div"); row.className = "ck";
+      var cb = document.createElement("input"); cb.type = "checkbox"; cb.id = id;
+      cb.checked = !!state.checks[id];
+      if(cb.checked) row.classList.add("done");
+      var lb = document.createElement("label"); lb.htmlFor = id; lb.textContent = label;
+      cb.addEventListener("change", function(){
+        state.checks[id] = cb.checked;
+        row.classList.toggle("done", cb.checked);
+        persist();
+      });
+      row.appendChild(cb); row.appendChild(lb);
+      box.appendChild(row);
+    });
+  }
+  buildChecklist("ck-rfq", RFQ_ITEMS, "rfq");
+  buildChecklist("ck-marque", MARQUE_ITEMS, "marque");
+
+  var journalTa = document.getElementById("journalTa");
+  var journalSaved = document.getElementById("journalSaved");
+  journalTa.value = state.journal;
+  var journalTimer = null;
+  journalTa.addEventListener("input", function(){
+    state.journal = journalTa.value;
+    clearTimeout(journalTimer);
+    journalTimer = setTimeout(function(){
+      persist();
+      journalSaved.textContent = "Sauvegardé sur cet appareil.";
+      setTimeout(function(){ journalSaved.textContent = ""; }, 1800);
+    }, 400);
+  });
+
+  var TABS = [
+    ["p-vue","Vue"], ["p-sourcing","Sourcing"], ["p-marque","Marque"],
+    ["p-chiffres","Chiffres"], ["p-plan","Plan 90J"], ["p-livrables","Livrables"], ["p-journal","Journal"]
+  ];
+  var tabbar = document.getElementById("tabbar");
+  TABS.forEach(function(t, i){
+    var b = document.createElement("button");
+    b.textContent = t[1];
+    if(i === 0) b.classList.add("active");
+    b.addEventListener("click", function(){
+      document.querySelectorAll("nav.tabs button").forEach(function(x){ x.classList.remove("active"); });
+      document.querySelectorAll("main .panel").forEach(function(x){ x.classList.remove("active"); });
+      b.classList.add("active");
+      document.getElementById(t[0]).classList.add("active");
+    });
+    tabbar.appendChild(b);
+  });
+  document.getElementById(TABS[0][0]).classList.add("active");
+</script>
+</body>
+</html>
