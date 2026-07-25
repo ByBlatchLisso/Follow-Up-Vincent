@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jardin 31 OS — Pilotage du projet</title>
+<style>
+:root{--green-dark:#1f3d24;--green:#2e6b3c;--green-deep:#274d2c;--cream:#f1eee5;--gold:#c99a3f;--gold-dark:#a87e2c;--ink:#25291f;--muted:#6b6f63;--ok:#2e7d32;--warn:#b26a00;--bad:#b3261e;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--cream);color:var(--ink);display:flex;min-height:100vh;}
+button{font-family:inherit;cursor:pointer;}
+/* Sidebar */
+.side{width:230px;background:var(--green-dark);color:#dfe8da;padding:22px 14px;display:flex;flex-direction:column;gap:4px;flex:none;position:sticky;top:0;height:100vh;overflow:auto;}
+.logo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:800;font-size:17px;letter-spacing:.5px;margin-bottom:18px;padding:0 8px;}
+.logo svg{width:34px;height:34px;flex:none;}
+.side button.nav{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:none;color:#c9d6c4;font-size:14.5px;font-weight:600;padding:11px 12px;border-radius:9px;transition:background .12s;}
+.side button.nav:hover{background:#ffffff12;color:#fff;}
+.side button.nav.on{background:var(--gold);color:#3a2f0c;}
+.side .spacer{flex:1;}
+.side .foot{font-size:11px;color:#8ba084;padding:10px 8px;line-height:1.5;}
+/* Main */
+.main{flex:1;padding:28px 32px;max-width:1100px;}
+h1{font-size:24px;color:var(--green-deep);margin-bottom:4px;}
+.sub{color:var(--muted);font-size:14px;margin-bottom:22px;}
+.grid{display:grid;gap:16px;}
+.g2{grid-template-columns:1fr 1fr;}
+.g3{grid-template-columns:repeat(3,1fr);}
+.g4{grid-template-columns:repeat(4,1fr);}
+.card{background:#fff;border:1px solid #e4e0d2;border-radius:12px;padding:20px;}
+.card h3{font-size:15px;color:var(--green-deep);margin-bottom:12px;}
+.kpi .v{font-size:30px;font-weight:800;color:var(--green-deep);}
+.kpi .l{font-size:12.5px;color:var(--muted);margin-top:2px;}
+.kpi input{width:80px;font-size:26px;font-weight:800;color:var(--green-deep);border:none;border-bottom:2px dashed #d8d3c2;background:none;text-align:center;}
+.kpi input:focus{outline:none;border-bottom-color:var(--gold);}
+.bar{height:10px;background:#e7e3d6;border-radius:99px;overflow:hidden;margin:8px 0 4px;}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:99px;transition:width .3s;}
+.alert{border-radius:10px;padding:14px 16px;font-size:14px;margin-bottom:16px;border:1px solid;}
+.alert.warn{background:#fff6e5;border-color:#e8c98a;color:#7a5410;}
+.alert.ok{background:#edf6ed;border-color:#bcd9bc;color:#25592a;}
+.alert.info{background:#fbf3d0;border-color:#c9a94e;color:#6a5a1e;}
+/* Todo */
+.etape{background:#fff;border:1px solid #e4e0d2;border-radius:12px;margin-bottom:14px;overflow:hidden;}
+.etape summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;align-items:center;gap:14px;font-weight:700;color:var(--green-deep);font-size:15px;}
+.etape summary::-webkit-details-marker{display:none;}
+.etape .pct{margin-left:auto;font-size:12.5px;font-weight:800;color:var(--gold-dark);white-space:nowrap;}
+.etape .items{padding:0 20px 16px;}
+.titem{display:flex;align-items:flex-start;gap:10px;padding:7px 0;font-size:14px;border-top:1px solid #f0ede2;}
+.titem input{margin-top:3px;accent-color:var(--green);width:16px;height:16px;flex:none;}
+.titem.done label{text-decoration:line-through;color:#9a9e90;}
+.titem label{cursor:pointer;line-height:1.45;}
+.badge{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:99px;background:#e7efe6;color:var(--green-deep);margin-left:6px;vertical-align:1px;}
+.badge.toi{background:#fdeecd;color:#7a5410;}
+/* Messages */
+.msgtools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.msgtools button{border:1.5px solid var(--green);background:#fff;color:var(--green-deep);font-weight:700;font-size:13px;padding:8px 14px;border-radius:99px;}
+.msgtools button.on{background:var(--green);color:#fff;}
+.msgtools input{flex:1;min-width:180px;padding:9px 14px;border:1px solid #cfcbbd;border-radius:99px;font-size:14px;}
+.msg{background:#fff;border:1px solid #e4e0d2;border-radius:12px;padding:16px 18px;margin-bottom:12px;}
+.msg .mh{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.msg .mh b{font-size:14px;color:var(--green-deep);}
+.msg .cat{font-size:10.5px;font-weight:800;background:#e7efe6;color:var(--green-deep);padding:2px 8px;border-radius:99px;}
+.msg pre{white-space:pre-wrap;font-family:inherit;font-size:13.5px;color:#3a3f33;background:var(--cream);border-radius:8px;padding:12px 14px;line-height:1.5;}
+.msg .copy{margin-left:auto;border:none;background:var(--gold);color:#3a2f0c;font-weight:800;font-size:12.5px;padding:7px 14px;border-radius:8px;}
+.msg .copy:hover{background:var(--gold-dark);color:#fff;}
+.sap{font-size:11.5px;color:var(--warn);margin-top:6px;font-weight:600;}
+/* CRM */
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;font-size:13.5px;}
+th{background:var(--green-deep);color:#fff;text-align:left;padding:10px 12px;font-size:12.5px;}
+td{padding:8px 12px;border-top:1px solid #eeebe0;vertical-align:middle;}
+td input,td select{width:100%;border:1px solid transparent;background:transparent;font-size:13px;padding:5px 6px;border-radius:6px;font-family:inherit;}
+td input:focus,td select:focus{outline:none;border-color:var(--gold);background:#fffdf4;}
+.st{font-weight:700;border-radius:6px;}
+.st.aenvoyer{color:#6b6f63;} .st.envoye{color:#0b61a4;} .st.arelancer{color:var(--warn);} .st.rdv{color:#7b1fa2;} .st.devis{color:var(--gold-dark);} .st.signe{color:var(--ok);} .st.perdu{color:var(--bad);}
+.rowbtn{border:none;background:none;color:var(--bad);font-size:15px;}
+.addbtn,.exportbtn{border:none;background:var(--green);color:#fff;font-weight:700;font-size:13.5px;padding:10px 18px;border-radius:9px;margin-top:12px;}
+.exportbtn{background:#fff;color:var(--green-deep);border:1.5px solid var(--green);margin-left:8px;}
+.due{font-size:11px;font-weight:800;color:var(--warn);}
+/* Tarifs */
+.sim label{display:block;font-size:13px;font-weight:700;margin:10px 0 4px;color:#2b2f24;}
+.sim input,.sim select{width:100%;padding:9px 12px;border:1px solid #cfcbbd;border-radius:8px;font-size:14px;}
+.sim .res{background:var(--green-deep);color:#fff;border-radius:10px;padding:14px 16px;margin-top:14px;font-size:14px;}
+.sim .res b{color:var(--gold);font-size:20px;}
+.tarif td:first-child{font-weight:600;}
+/* Répertoire */
+.link{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #f0ede2;font-size:14px;}
+.link a{color:var(--green-deep);font-weight:700;text-decoration:underline;}
+.link .d{color:var(--muted);font-size:12.5px;}
+/* Données */
+.databtns button{border:none;background:var(--green);color:#fff;font-weight:700;font-size:14px;padding:12px 20px;border-radius:9px;margin-right:10px;margin-bottom:10px;}
+.databtns button.sec{background:#fff;color:var(--green-deep);border:1.5px solid var(--green);}
+.databtns button.danger{background:#fff;color:var(--bad);border:1.5px solid var(--bad);}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green-deep);color:#fff;padding:12px 22px;border-radius:99px;font-size:14px;font-weight:600;opacity:0;transition:opacity .25s;pointer-events:none;z-index:99;}
+.toast.show{opacity:1;}
+.view{display:none;}
+.view.on{display:block;}
+@media(max-width:840px){
+  body{flex-direction:column;}
+  .side{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap;padding:12px;}
+  .logo{width:100%;margin-bottom:6px;}
+  .side button.nav{width:auto;font-size:13px;padding:8px 12px;}
+  .side .spacer,.side .foot{display:none;}
+  .main{padding:18px;}
+  .g2,.g3,.g4{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<nav class="side">
+  <div class="logo">
+    <svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#16301b"/><path d="M14 44 Q30 12 52 16 Q50 40 26 46 Q20 47 14 44Z" fill="#c99a3f"/><path d="M16 43 Q34 24 50 18" stroke="#16301b" stroke-width="2.4" fill="none"/></svg>
+    JARDIN 31 <span style="color:#c99a3f;">OS</span>
+  </div>
+  <button class="nav on" data-v="dash">📊 Tableau de bord</button>
+  <button class="nav" data-v="todo">✅ To-do lancement</button>
+  <button class="nav" data-v="msgs">💬 Messages</button>
+  <button class="nav" data-v="crm">👥 Prospection (CRM)</button>
+  <button class="nav" data-v="tarifs">💶 Tarifs & simulateur</button>
+  <button class="nav" data-v="rep">📁 Répertoire & liens</button>
+  <button class="nav" data-v="data">⚙️ Sauvegarde</button>
+  <div class="spacer"></div>
+  <div class="foot">Jardin 31 — entretien de jardin & nettoyage extérieur · Toulouse + 20 km<br><br>⚠ Pense à exporter ta sauvegarde (onglet Sauvegarde) avant de fermer.</div>
+</nav>
+
+<main class="main">
+
+<!-- ============ DASHBOARD ============ -->
+<div class="view on" id="v-dash">
+  <h1>Tableau de bord</h1>
+  <p class="sub">Vue d'ensemble du lancement. Les compteurs se remplissent depuis la To-do et le CRM ; les chiffres € sont à saisir à la main.</p>
+  <div id="failAlert"></div>
+  <div class="card" style="margin-bottom:16px;">
+    <h3>Avancement du lancement</h3>
+    <div class="bar"><i id="globalBar" style="width:0%"></i></div>
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);"><span id="globalPct">0 %</span><span id="globalCount"></span></div>
+  </div>
+  <div class="grid g4" style="margin-bottom:16px;">
+    <div class="card kpi"><div class="v" id="kContacts">0</div><div class="l">Contacts prospectés (CRM)</div></div>
+    <div class="card kpi"><div class="v" id="kDevis">0</div><div class="l">Devis envoyés (CRM)</div></div>
+    <div class="card kpi"><div class="v" id="kSignes">0</div><div class="l">Clients signés (CRM)</div></div>
+    <div class="card kpi"><input type="number" id="kCA" value="0" onchange="saveKpi()"><div class="l">CA encaissé (€)</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card">
+      <h3>🎯 Tes 3 prochaines actions</h3>
+      <div id="nextActions" style="font-size:14px;line-height:1.7;"></div>
+    </div>
+    <div class="card">
+      <h3>📌 Règle du jeu</h3>
+      <p style="font-size:13.5px;line-height:1.65;color:#3a3f33;">
+        <b>Objectif semaine :</b> 5 messages B2B + 3 posts locaux + site en ligne.<br>
+        <b>Signal d'échec :</b> 15 contacts sans aucun devis sous 2 semaines → on change la zone ou le message.<br>
+        <b>Crédit d'impôt :</b> interdit de le promettre avant la déclaration SAP (étape 6).<br>
+        <b>Relances :</b> J+5 puis J+12, ensuite stop.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TODO ============ -->
+<div class="view" id="v-todo">
+  <h1>To-do lancement</h1>
+  <p class="sub">Les 8 étapes du runbook, découpées en cases à cocher. <span class="badge toi">TOI</span> = toi seul peux le faire · <span class="badge">FAIT PAR CLAUDE</span> = déjà livré.</p>
+  <div id="todoList"></div>
+</div>
+
+<!-- ============ MESSAGES ============ -->
+<div class="view" id="v-msgs">
+  <h1>Banque de messages</h1>
+  <p class="sub">Clique « Copier » puis colle où tu veux. Remplace les [crochets]. ⚠SAP = ligne à n'ajouter qu'après ta déclaration SAP.</p>
+  <div class="msgtools">
+    <button class="on" data-c="all">Tous</button>
+    <button data-c="Particulier">Particuliers</button>
+    <button data-c="B2B">B2B</button>
+    <button data-c="Relance">Relances</button>
+    <button data-c="Client">Cycle client</button>
+    <button data-c="Saison">Saisonnier</button>
+    <button data-c="SMS">WhatsApp/SMS</button>
+    <button data-c="Réseaux">Réseaux</button>
+    <input id="msgSearch" placeholder="Rechercher… (ex : syndic, avis, relance)">
+  </div>
+  <div id="msgList"></div>
+</div>
+
+<!-- ============ CRM ============ -->
+<div class="view" id="v-crm">
+  <h1>Prospection — suivi des contacts</h1>
+  <p class="sub">Ajoute chaque prospect. La date de relance (J+5) se calcule seule quand tu passes en « Envoyé ». Statut « Signé » = client.</p>
+  <div style="overflow-x:auto;">
+  <table id="crmTable">
+    <thead><tr><th style="width:16%">Nom / société</th><th style="width:11%">Type</th><th style="width:15%">Contact</th><th style="width:12%">Statut</th><th style="width:11%">Envoyé le</th><th style="width:11%">Relance</th><th>Notes</th><th style="width:34px"></th></tr></thead>
+    <tbody id="crmBody"></tbody>
+  </table>
+  </div>
+  <button class="addbtn" onclick="addRow()">+ Ajouter un contact</button>
+  <button class="exportbtn" onclick="exportCSV()">⬇ Export CSV</button>
+</div>
+
+<!-- ============ TARIFS ============ -->
+<div class="view" id="v-tarifs">
+  <h1>Tarifs & simulateur</h1>
+  <p class="sub">Fourchettes marché — démarre bas, recalibre après 5-10 devis réels. Le détail des marges est dans le calculateur Excel.</p>
+  <div class="grid g2">
+    <div class="card">
+      <h3>Grille de référence</h3>
+      <table class="tarif">
+        <thead><tr><th>Prestation</th><th>Marché</th><th>Ton prix départ</th></tr></thead>
+        <tbody>
+          <tr><td>Tonte</td><td>0,20–0,50 €/m²</td><td>0,30 €/m²</td></tr>
+          <tr><td>Tonte / entretien horaire</td><td>25–35 €/h</td><td>30 €/h</td></tr>
+          <tr><td>Taille de haies</td><td>4–7 €/ml</td><td>6 €/ml</td></tr>
+          <tr><td>Débroussaillage</td><td>0,30–0,70 €/m²</td><td>0,50 €/m²</td></tr>
+          <tr><td>Nettoyage HP</td><td>3–6 €/m²</td><td>4 €/m²</td></tr>
+          <tr><td>Évacuation déchets</td><td>20–40 € forfait</td><td>30 €</td></tr>
+          <tr><td>Contrat annuel</td><td>760–1400 €/an</td><td>sur devis</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card sim">
+      <h3>Estimateur rapide de devis</h3>
+      <label>Prestation</label>
+      <select id="simPresta">
+        <option value="0.30">Tonte (€/m²)</option>
+        <option value="6">Taille de haies (€/ml)</option>
+        <option value="0.50">Débroussaillage (€/m²)</option>
+        <option value="4">Nettoyage HP (€/m²)</option>
+      </select>
+      <label>Quantité (m² ou ml)</label>
+      <input type="number" id="simQty" value="300">
+      <label>Évacuation déchets verts ?</label>
+      <select id="simEvac"><option value="0">Non</option><option value="30">Oui (+30 €)</option></select>
+      <div class="res">Estimation : <b id="simTotal">90 €</b><br><span style="font-size:12.5px;color:#b9c8b4;">Ajuste selon l'état du terrain et l'accès (+20-40 % si difficile).</span></div>
+      <h3 style="margin-top:22px;">Simulateur crédit d'impôt (après SAP)</h3>
+      <label>Montant annuel entretien facturé (€)</label>
+      <input type="number" id="ciMontant" value="1200">
+      <div class="res">Coût net client : <b id="ciNet">600 €</b> <span style="font-size:12px;">(crédit <span id="ciCredit">600</span> €, plafond 5 000 €/an)</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RÉPERTOIRE ============ -->
+<div class="view" id="v-rep">
+  <h1>Répertoire & liens utiles</h1>
+  <p class="sub">Tout ce dont tu as besoin, au même endroit.</p>
+  <div class="grid g2">
+    <div class="card">
+      <h3>🏛 Administratif</h3>
+      <div class="link"><div><a href="https://nova.entreprises.gouv.fr" target="_blank">NOVA — déclaration SAP</a><div class="d">Gratuit. À faire après immatriculation. Débloque le crédit d'impôt 50 %.</div></div></div>
+      <div class="link"><div><a href="https://www.formalites.entreprises.gouv.fr" target="_blank">Guichet unique — immatriculation</a><div class="d">Création de la micro-entreprise (après l'appel MSA).</div></div></div>
+      <div class="link"><div><a href="https://hautegaronne.msa.fr" target="_blank">MSA Haute-Garonne</a><div class="d">L'appel n°1 : entretien pur = URSSAF en principe, création paysagère = MSA.</div></div></div>
+      <div class="link"><div><a href="https://www.urssaf.fr" target="_blank">URSSAF</a><div class="d">Régime micro-entrepreneur classique.</div></div></div>
+      <div class="link"><div><a href="https://data.inpi.fr" target="_blank">INPI — data.inpi.fr</a><div class="d">Vérifier qu'aucune marque « Jardin 31 » n'est déposée.</div></div></div>
+    </div>
+    <div class="card">
+      <h3>🌐 Mise en ligne & comptes</h3>
+      <div class="link"><div><a href="https://app.netlify.com/drop" target="_blank">Netlify Drop</a><div class="d">Glisse le fichier HTML → site en ligne gratuit.</div></div></div>
+      <div class="link"><div><a href="https://formsubmit.co" target="_blank">FormSubmit</a><div class="d">Reçoit les demandes du formulaire par email. Activer au 1er envoi.</div></div></div>
+      <div class="link"><div><a href="https://business.google.com" target="_blank">Google Business Profile</a><div class="d">LA priorité visibilité. Catégorie : Service d'entretien de jardin.</div></div></div>
+      <div class="link"><div><a href="https://business.facebook.com" target="_blank">Facebook / Meta Business</a><div class="d">Page pro + accès groupes de quartier.</div></div></div>
+      <div class="link"><div><a href="https://www.whatsapp.com/business" target="_blank">WhatsApp Business</a><div class="d">App gratuite : catalogue, réponses auto, n° pro.</div></div></div>
+    </div>
+    <div class="card">
+      <h3>🚛 Déchèteries pro & location</h3>
+      <div class="link"><div><b>Déchèteries professionnelles</b><div class="d">Daturas (Toulouse) · Cler Verts (Montgiscard) · SIVOM (Cugnaux) · Veolia (Fenouillet). Grand public = interdit aux pros.</div></div></div>
+      <div class="link"><div><b>Location matériel ponctuel</b><div class="d">Kiloutou / Loxam : mini-pelle, plaque vibrante, broyeur — uniquement si chantier signé.</div></div></div>
+    </div>
+    <div class="card">
+      <h3>📋 Rappels clés</h3>
+      <div class="link"><div><b>Crédit d'impôt SAP</b><div class="d">50 % sur l'ENTRETIEN uniquement (pas HP, pas création). Plafond 5 000 €/an/foyer. Jamais avant déclaration.</div></div></div>
+      <div class="link"><div><b>Règle des 30 %</b><div class="d">Si tout est dans la même structure : activités non-SAP &lt; 30 % du CA, compta séparée.</div></div></div>
+      <div class="link"><div><b>RC Pro</b><div class="d">≈ 170-200 €/an. Vérifier que le nettoyeur HP est couvert.</div></div></div>
+      <div class="link"><div><b>Facturation électronique</b><div class="d">Réception obligatoire dès sept. 2026, émission sept. 2027.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DONNÉES ============ -->
+<div class="view" id="v-data">
+  <h1>Sauvegarde</h1>
+  <p class="sub">Cette appli garde tes données en mémoire pendant la session. Avant de fermer, exporte ta sauvegarde ; au retour, réimporte-la.</p>
+  <div class="alert info">💾 <b>Réflexe :</b> Exporter en fin de session → le fichier <i>jardin31-sauvegarde.json</i> se télécharge → au prochain lancement, « Importer » ce fichier et tu retrouves tout (to-do cochée, CRM, compteurs).</div>
+  <div class="card databtns">
+    <button onclick="exportState()">⬇ Exporter ma sauvegarde (.json)</button>
+    <button class="sec" onclick="document.getElementById('importFile').click()">⬆ Importer une sauvegarde</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importState(this)">
+    <button class="danger" onclick="resetState()">↺ Tout réinitialiser</button>
+  </div>
+</div>
+
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= ÉTAT ================= */
+let state = {
+  kpi:{ca:0},
+  todo:{},   // id -> true
+  crm:[]
+};
+
+/* ================= TODO DATA ================= */
+const ETAPES=[
+ {t:"Étape 1 — Appel MSA 31 (avant immatriculation)",items:[
+  ["e1a","Appeler la MSA Haute-Garonne : « entretien uniquement (tonte, taille, débroussaillage, désherbage, nettoyage HP) — micro-entreprise URSSAF possible ? »","toi"],
+  ["e1b","Noter la réponse par écrit (nom de l'interlocuteur + date)","toi"]]},
+ {t:"Étape 2 — Réunir tes informations",items:[
+  ["e2a","Téléphone pro choisi (perso OK au début, ou 2e ligne/eSIM)","toi"],
+  ["e2b","Créer un email dédié (ex : jardin31.toulouse@gmail.com)","toi"],
+  ["e2c","Numéro WhatsApp décidé (format 33XXXXXXXXX)","toi"],
+  ["e2d","Adresse de domiciliation = ton adresse perso (normal en micro)","toi"]]},
+ {t:"Étape 3 — Créer les comptes en ligne",items:[
+  ["e3a","Google Business Profile créé (catégorie : Service d'entretien de jardin, zone Toulouse + 20 km)","toi"],
+  ["e3b","Page Facebook pro créée (logo + couverture fournis)","toi"],
+  ["e3c","Compte Instagram pro créé (logo fourni)","toi"],
+  ["e3d","WhatsApp Business installé avec le n° pro","toi"],
+  ["e3e","FormSubmit : email choisi + activation faite au 1er test du formulaire","toi"],
+  ["e3f","Logo + couverture + post de lancement (fichiers PNG)","fait"]]},
+ {t:"Étape 4 — Mettre le site en ligne",items:[
+  ["e4a","Remplacer tous les [crochets] du fichier HTML (tel, email, WhatsApp, liens réseaux)","toi"],
+  ["e4b","Supprimer le bandeau jaune interne en haut du fichier","toi"],
+  ["e4c","Glisser le fichier sur app.netlify.com/drop → site en ligne","toi"],
+  ["e4d","Tester : bouton WhatsApp, bouton Appeler, formulaire (activer FormSubmit)","toi"],
+  ["e4e","Site v3 complet (formules, FAQ, communes SEO, avis prêts, crédit d'impôt prêt)","fait"]]},
+ {t:"Étape 5 — Immatriculer + assurances",items:[
+  ["e5a","Immatriculation selon la réponse MSA (guichet unique)","toi"],
+  ["e5b","RC Pro souscrite (vérifier couverture nettoyeur HP)","toi"],
+  ["e5c","Usage pro du véhicule déclaré à l'assureur auto","toi"],
+  ["e5d","SIRET reçu → collé dans site, devis, CGV, contrats","toi"]]},
+ {t:"Étape 6 — Déclaration SAP + crédit d'impôt",items:[
+  ["e6a","Déclaration SAP déposée sur NOVA","toi"],
+  ["e6b","Déclaration validée → bloc crédit d'impôt du site activé","toi"],
+  ["e6c","Ligne ⚠SAP ajoutée aux messages de prospection","toi"]]},
+ {t:"Étape 7 — Prospection (à lancer TOUT DE SUITE)",items:[
+  ["e7a","Message A posté dans 3 groupes Facebook locaux","toi"],
+  ["e7b","Annonce Leboncoin publiée","toi"],
+  ["e7c","Post Nextdoor publié","toi"],
+  ["e7d","5 messages B2B envoyés (voir CRM)","toi"],
+  ["e7e","10 flyers boîtes aux lettres quartier pavillonnaire","toi"],
+  ["e7f","Relances J+5 faites sur les non-réponses","toi"],
+  ["e7g","Banque de messages complète (28 modèles)","fait"]]},
+ {t:"Étape 8 — Appel matériel (30 min)",items:[
+  ["e8a","Check-list matériel cochée avec Aurélien + ton père","toi"],
+  ["e8b","Les 2-3 manques réels identifiés (à louer, pas acheter)","toi"],
+  ["e8c","EPI complets confirmés (gants, lunettes, casque anti-bruit, chaussures)","toi"]]}
+];
+/* pré-cocher les "fait par Claude" */
+ETAPES.forEach(e=>e.items.forEach(i=>{if(i[2]==="fait")state.todo[i[0]]=true;}));
+
+/* ================= MESSAGES DATA ================= */
+const MSGS=[
+{c:"Particulier",t:"A1 — Post Facebook groupe de quartier",x:`🌿 Nouveau sur [commune/quartier] : Jardin 31 — entretien de jardin & nettoyage extérieur.
+Tonte, taille de haies, débroussaillage, désherbage, ramassage de feuilles, nettoyage de terrasse au nettoyeur haute pression. On repart avec les déchets verts.
+Ponctuel ou entretien régulier toute l'année. Matériel professionnel, interlocuteur unique.
+👉 Devis gratuit sous 48 h, sans engagement — quelques photos de votre extérieur suffisent.
+📞 [TÉLÉPHONE] · WhatsApp : wa.me/[WHATSAPP] · [SITE]`,sap:true},
+{c:"Particulier",t:"A2 — Post court (Nextdoor / commentaire)",x:`Bonjour à tous 👋 Je lance Jardin 31 : entretien de jardin (tonte, taille, débroussaillage) et nettoyage extérieur haute pression sur [commune] et alentours. Devis gratuit sous 48 h — envoyez-moi simplement des photos de votre extérieur au [TÉLÉPHONE] (WhatsApp OK). Merci pour vos partages !`},
+{c:"Particulier",t:"A3 — Annonce Leboncoin",x:`Titre : Entretien de jardin & nettoyage extérieur — Toulouse + 20 km — Devis 48 h
+
+Jardin 31 assure l'entretien de votre extérieur : tonte de pelouse, taille de haies et arbustes, débroussaillage, désherbage, ramassage de feuilles, évacuation des déchets verts, nettoyage haute pression (terrasses, allées, façades).
+Intervention ponctuelle ou contrat d'entretien régulier (6 à 10 passages/an). Matériel professionnel. Assuré RC Pro.
+Devis gratuit sous 48 h sur simples photos. Zone : Toulouse et communes dans un rayon de 20 km.
+Contact : [TÉLÉPHONE] (appel, SMS, WhatsApp).`},
+{c:"Particulier",t:"A4 — Flyer boîte aux lettres",x:`VOTRE JARDIN, SANS Y PENSER.
+Tonte · Taille de haies · Débroussaillage · Feuilles · Terrasse haute pression
+→ Devis GRATUIT sous 48 h : envoyez des photos par WhatsApp, recevez votre prix.
+→ Ponctuel ou entretien régulier toute l'année. Déchets verts évacués.
+JARDIN 31 — [TÉLÉPHONE] — [SITE]`},
+{c:"Particulier",t:"A5 — Réponse à un intéressé sous un post",x:`Bonjour [Prénom], merci pour votre message ! Le plus simple : envoyez-moi 2-3 photos de votre extérieur au [TÉLÉPHONE] (WhatsApp) avec la commune, et je vous fais un devis gratuit sous 48 h. À très vite !`},
+{c:"B2B",t:"B1 — Syndic bénévole de copropriété",x:`Objet : Entretien des extérieurs de votre copropriété — devis gratuit
+
+Bonjour,
+Jardin 31 assure l'entretien des espaces extérieurs des petites copropriétés de Toulouse et alentours : tonte, taille de haies, débroussaillage, ramassage de feuilles, nettoyage haute pression des parties communes, évacuation des déchets verts.
+Nous travaillons avec un interlocuteur unique et un compte-rendu simple à chaque passage — pratique pour votre AG.
+Puis-je passer 15 minutes faire un devis gratuit sur votre site ?
+Cordialement,
+Vincent Ferry — Jardin 31 — [TÉLÉPHONE]`},
+{c:"B2B",t:"B2 — Agence immobilière / syndic pro",x:`Objet : Prestataire espaces verts réactif pour vos copropriétés — Toulouse + 20 km
+
+Bonjour,
+Jardin 31 propose l'entretien des espaces extérieurs pour les copropriétés et biens que vous gérez : tonte, taille, débroussaillage, nettoyage haute pression des parties communes, remises en état entre deux locations, évacuation des déchets verts.
+Nos atouts : réactivité (devis sous 48 h), un seul interlocuteur, compte-rendu de passage avec photos, facturation simple par site.
+Auriez-vous un ou deux sites sur lesquels tester notre prestation avec un devis gratuit ?
+Cordialement,
+Vincent Ferry — Jardin 31 — [TÉLÉPHONE]`},
+{c:"B2B",t:"B3 — Mairie / service technique",x:`Objet : Renfort entretien espaces verts — [commune]
+
+Bonjour,
+Jardin 31 intervient sur [commune] et alentours pour l'entretien d'espaces verts : tonte, débroussaillage, taille, ramassage de feuilles, nettoyage haute pression de mobilier urbain et sols.
+Nous pouvons intervenir en renfort ponctuel de vos équipes (pics saisonniers, remplacements) ou sur des sites précis en régulier, avec devis gratuit préalable.
+Seriez-vous disponible pour un court échange téléphonique ?
+Cordialement,
+Vincent Ferry — Jardin 31 — [TÉLÉPHONE]`},
+{c:"B2B",t:"B4 — Commerce / restaurant avec terrasse",x:`Objet : Une terrasse impeccable pour vos clients — devis gratuit
+
+Bonjour,
+L'aspect extérieur de votre établissement, c'est la première impression de vos clients. Jardin 31 propose : nettoyage haute pression de votre terrasse et devanture, entretien des espaces verts et jardinières, désherbage du parking.
+Intervention possible en dehors de vos horaires d'ouverture, en ponctuel ou en passage régulier.
+Je peux passer faire un devis gratuit en 10 minutes — quand cela vous arrange-t-il ?
+Cordialement,
+Vincent Ferry — Jardin 31 — [TÉLÉPHONE]`},
+{c:"B2B",t:"B5 — Résidence seniors / établissement",x:`Objet : Entretien des extérieurs de votre résidence — prestataire local
+
+Bonjour,
+Des extérieurs soignés comptent pour vos résidents et leurs familles. Jardin 31 assure l'entretien complet : tonte, taille, fleurissement des massifs, allées propres (nettoyage haute pression), ramassage de feuilles, sécurisation des cheminements (anti-mousse).
+Nous proposons un contrat d'entretien annuel avec calendrier de passages et compte-rendu, ou des interventions ponctuelles.
+Puis-je vous proposer un devis gratuit sur site ?
+Cordialement,
+Vincent Ferry — Jardin 31 — [TÉLÉPHONE]`},
+{c:"Relance",t:"C1 — Relance prospection J+5",x:`Objet : RE : Entretien des espaces extérieurs — [nom du site]
+
+Bonjour,
+Je me permets de revenir vers vous concernant l'entretien de vos espaces extérieurs. Je peux passer faire un devis gratuit quand cela vous arrange, sans engagement.
+Si le sujet n'est pas d'actualité, un simple retour me permet de ne pas vous solliciter davantage.
+Bonne journée,
+Vincent — Jardin 31 — [TÉLÉPHONE]`},
+{c:"Relance",t:"C2 — Relance finale J+12",x:`Objet : Dernier message — entretien extérieurs
+
+Bonjour,
+Dernier message de ma part : si l'entretien de vos extérieurs devient un sujet (saison, départ d'un prestataire, remise en état), je reste disponible au [TÉLÉPHONE]. Au plaisir d'échanger le moment venu.
+Bonne continuation,
+Vincent — Jardin 31`},
+{c:"Relance",t:"C3 — Relance après devis J+4",x:`Bonjour [Prénom],
+Avez-vous pu regarder le devis que je vous ai envoyé [jour] ? Je reste disponible si vous avez des questions ou si vous souhaitez ajuster une prestation (on peut enlever ou ajouter des lignes librement).
+Bonne journée,
+Vincent — Jardin 31 — [TÉLÉPHONE]`},
+{c:"Relance",t:"C4 — Relance devis J+10 (dernière)",x:`Bonjour [Prénom],
+Je me permets une dernière relance sur le devis. Si le montant ou le contenu ne convient pas, dites-le moi simplement : je peux proposer une version allégée (par exemple en laissant les déchets verts sur place, ou en espaçant les passages).
+Sinon, je clos le dossier, sans souci. Merci de votre retour !
+Vincent — Jardin 31`},
+{c:"Client",t:"D1 — Réponse à une demande entrante",x:`Bonjour [Prénom],
+Merci pour votre demande ! Pour vous faire un devis précis sous 48 h, pouvez-vous m'envoyer :
+1) 2-3 photos de votre extérieur (vue d'ensemble + zones à traiter)
+2) votre commune
+3) ponctuel ou régulier ?
+Par WhatsApp c'est le plus simple : wa.me/[WHATSAPP]. À très vite !
+Vincent — Jardin 31`},
+{c:"Client",t:"D2 — Envoi du devis (accompagnement)",x:`Objet : Votre devis Jardin 31 — [prestation]
+
+Bonjour [Prénom],
+Voici votre devis en pièce jointe, valable 30 jours. Chaque ligne est indépendante : on peut en retirer ou en ajouter selon votre budget.
+Pour valider, il suffit de me renvoyer le devis signé (photo acceptée) ou un simple accord par retour de message. Je vous propose ensuite une date sous 1 à 2 semaines.
+Des questions ? [TÉLÉPHONE].
+Bonne journée,
+Vincent — Jardin 31`},
+{c:"Client",t:"D3 — Confirmation veille d'intervention",x:`Bonjour [Prénom], je vous confirme mon passage demain [jour] à [heure] pour [prestation]. Merci de laisser l'accès au jardin ouvert [+ point d'eau/prise si nettoyage HP]. En cas de pluie forte, je vous propose une nouvelle date sans frais. À demain !
+Vincent — Jardin 31`},
+{c:"Client",t:"D4 — Fin d'intervention + avis Google ⭐",x:`Bonjour [Prénom],
+Merci pour votre confiance ! J'espère que le résultat vous plaît.
+Un petit service qui m'aide énormément à me lancer : un avis Google (2 minutes). C'est ce qui permet aux voisins de me trouver : [LIEN-AVIS-GOOGLE]
+Et si quelque chose ne vous a pas plu, dites-le moi d'abord — je reviens corriger sans discuter.
+À bientôt !
+Vincent — Jardin 31`},
+{c:"Client",t:"D5 — Proposition contrat annuel",x:`Bonjour [Prénom],
+Cela fait maintenant [X] interventions chez vous — merci pour votre fidélité !
+Pour la suite, je vous propose un contrat d'entretien annuel : [6-10] passages planifiés selon les saisons, tarif préférentiel par rapport au ponctuel, priorité de planning, paiement étalé. Résiliable avec un simple préavis de 30 jours.
+Concrètement pour votre jardin : [détail] pour [montant] €/[mois ou trimestre].
+On en parle au téléphone ? [TÉLÉPHONE]
+Vincent — Jardin 31`},
+{c:"Client",t:"D6 — Réactivation client inactif",x:`Bonjour [Prénom], c'est Vincent de Jardin 31. La saison [du printemps/des feuilles] approche — souhaitez-vous que je passe pour [tonte de reprise / taille / ramassage] comme la dernière fois ? Je peux vous proposer un créneau [semaine prochaine]. Bonne journée !`},
+{c:"Saison",t:"E1 — Printemps : remise en route",x:`🌱 C'est reparti ! Première tonte, taille de reprise, désherbage, nettoyage de la terrasse après l'hiver : Jardin 31 remet votre extérieur en état pour la belle saison. Devis gratuit sous 48 h — [TÉLÉPHONE]. Pensez au contrat annuel : vous n'y penserez plus jusqu'à l'hiver !`},
+{c:"Saison",t:"E2 — Été : avant les vacances",x:`☀️ Vous partez en vacances ? On s'occupe du jardin pendant votre absence : tonte, entretien, surveillance. Vous rentrez dans un extérieur impeccable. Jardin 31 — devis gratuit sous 48 h — [TÉLÉPHONE].`},
+{c:"Saison",t:"E3 — Automne : feuilles + haies",x:`🍂 Les feuilles, on s'en occupe. Ramassage complet, dernière tonte, taille des haies avant l'hiver, évacuation des déchets verts. Jardin 31 — devis gratuit sous 48 h — [TÉLÉPHONE].`},
+{c:"Saison",t:"E4 — Hiver : préparer le printemps",x:`❄️ L'hiver, c'est le bon moment : taille des arbustes, débroussaillage des zones oubliées, nettoyage haute pression de la terrasse avant le printemps. Créneaux disponibles rapidement en cette saison. Jardin 31 — [TÉLÉPHONE].`},
+{c:"SMS",t:"F1 — Premier contact (recommandation)",x:`Bonjour [Prénom], je suis Vincent de Jardin 31 (entretien de jardin/nettoyage extérieur). [Personne] m'a dit que vous cherchiez quelqu'un pour [besoin]. Je peux vous faire un devis gratuit sous 48 h sur simples photos. Intéressé(e) ?`},
+{c:"SMS",t:"F2 — Relance courte",x:`Bonjour [Prénom], avez-vous eu le temps de regarder ma proposition ? Je reste dispo pour toute question. Vincent — Jardin 31`},
+{c:"SMS",t:"F3 — Rappel RDV",x:`Rappel : passage Jardin 31 demain [heure] pour [prestation]. Merci de laisser l'accès ouvert. À demain ! Vincent`},
+{c:"Réseaux",t:"G1 — Post de lancement",x:`🚀 Jardin 31 se lance ! Entretien de jardin & nettoyage extérieur à Toulouse et 20 km alentour.
+✔ Tonte, taille de haies, débroussaillage
+✔ Ramassage de feuilles, déchets verts évacués
+✔ Terrasses et allées au nettoyeur haute pression
+🎯 Devis gratuit sous 48 h, sans engagement.
+📞 [TÉLÉPHONE] · Lien en bio.
+#jardinage #toulouse #entretienjardin #hautegaronne`},
+{c:"Réseaux",t:"G2 — Post avant/après (à chaque chantier)",x:`Avant ➡️ Après 📅 [date]
+[Prestation] à [commune]. Durée : [X h].
+Vous voulez le même résultat ? Devis gratuit sous 48 h — [TÉLÉPHONE] ou lien en bio.
+#avantapres #jardin #toulouse #[commune]`},
+{c:"Réseaux",t:"G3 — Post « qui sommes-nous »",x:`Derrière Jardin 31 : [Vincent + équipe], du matériel professionnel et une obsession : que votre extérieur soit impeccable sans que vous ayez à y penser. Basés à [commune], on intervient sur Toulouse et 20 km alentour. Un besoin ? Devis gratuit sous 48 h 👉 [TÉLÉPHONE]`},
+{c:"Réseaux",t:"G4 — Story sondage (engagement)",x:`Story : photo de jardin + sondage « Chez vous, la corvée n°1 c'est quoi ? 🌿 Tonte / 🍂 Feuilles / ✂️ Haies / 💦 Terrasse » — puis réponse en DM avec proposition de devis gratuit.`}
+];
+
+/* ================= NAV ================= */
+document.querySelectorAll('.side .nav').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.side .nav').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById('v-'+b.dataset.v).classList.add('on');
+  if(b.dataset.v==='dash')renderDash();
+}));
+
+/* ================= TOAST ================= */
+let toastT;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),1800);}
+
+/* ================= TODO ================= */
+function renderTodo(){
+  const el=document.getElementById('todoList');el.innerHTML='';
+  ETAPES.forEach((e,ei)=>{
+    const done=e.items.filter(i=>state.todo[i[0]]).length;
+    const d=document.createElement('details');d.className='etape';if(done<e.items.length&&done>0)d.open=true;
+    d.innerHTML=`<summary>${e.t}<span class="pct">${done}/${e.items.length}</span></summary><div class="items">${
+      e.items.map(i=>`<div class="titem ${state.todo[i[0]]?'done':''}"><input type="checkbox" id="${i[0]}" ${state.todo[i[0]]?'checked':''}><label for="${i[0]}">${i[1]}<span class="badge ${i[2]==='toi'?'toi':''}">${i[2]==='toi'?'TOI':'FAIT PAR CLAUDE'}</span></label></div>`).join('')
+    }</div>`;
+    el.appendChild(d);
+  });
+  el.querySelectorAll('input[type=checkbox]').forEach(c=>c.addEventListener('change',()=>{
+    state.todo[c.id]=c.checked;renderTodo();renderDash();
+  }));
+}
+
+/* ================= MESSAGES ================= */
+let msgCat='all';
+function renderMsgs(){
+  const q=(document.getElementById('msgSearch').value||'').toLowerCase();
+  const el=document.getElementById('msgList');el.innerHTML='';
+  MSGS.filter(m=>(msgCat==='all'||m.c===msgCat)&&(m.t.toLowerCase().includes(q)||m.x.toLowerCase().includes(q))).forEach(m=>{
+    const d=document.createElement('div');d.className='msg';
+    d.innerHTML=`<div class="mh"><span class="cat">${m.c}</span><b>${m.t}</b><button class="copy">📋 Copier</button></div><pre>${m.x.replace(/</g,'&lt;')}</pre>${m.sap?'<div class="sap">⚠SAP — après déclaration seulement, ajouter : « 50 % de crédit d\'impôt sur l\'entretien de jardin — une prestation à 40 €/h ne vous revient qu\'à 20 € net. »</div>':''}`;
+    d.querySelector('.copy').addEventListener('click',()=>{navigator.clipboard.writeText(m.x).then(()=>toast('Message copié ✔')).catch(()=>toast('Copie impossible — sélectionne le texte'));});
+    el.appendChild(d);
+  });
+}
+document.querySelectorAll('.msgtools button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.msgtools button').forEach(x=>x.classList.remove('on'));b.classList.add('on');msgCat=b.dataset.c;renderMsgs();
+}));
+document.getElementById('msgSearch').addEventListener('input',renderMsgs);
+
+/* ================= CRM ================= */
+const STATUTS=["À envoyer","Envoyé","À relancer","RDV pris","Devis envoyé","Signé ✔","Perdu"];
+const TYPES=["Particulier","Syndic bénévole","Agence/Syndic pro","Mairie","Commerce","Résidence","Autre"];
+function stClass(s){return {"À envoyer":"aenvoyer","Envoyé":"envoye","À relancer":"arelancer","RDV pris":"rdv","Devis envoyé":"devis","Signé ✔":"signe","Perdu":"perdu"}[s]||"";}
+function addRow(data){
+  state.crm.push(data||{nom:"",type:"Particulier",contact:"",statut:"À envoyer",envoye:"",notes:""});
+  renderCRM();renderDash();
+}
+function relanceDate(envoye){
+  if(!envoye)return"";
+  const d=new Date(envoye);if(isNaN(d))return"";
+  d.setDate(d.getDate()+5);
+  return d.toISOString().slice(0,10);
+}
+function renderCRM(){
+  const b=document.getElementById('crmBody');b.innerHTML='';
+  state.crm.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    const rel=relanceDate(r.envoye);
+    tr.innerHTML=`
+     <td><input value="${r.nom||''}" data-f="nom" placeholder="Nom / société"></td>
+     <td><select data-f="type">${TYPES.map(t=>`<option ${r.type===t?'selected':''}>${t}</option>`).join('')}</select></td>
+     <td><input value="${r.contact||''}" data-f="contact" placeholder="tel / email"></td>
+     <td><select data-f="statut" class="st ${stClass(r.statut)}">${STATUTS.map(s=>`<option ${r.statut===s?'selected':''}>${s}</option>`).join('')}</select></td>
+     <td><input type="date" value="${r.envoye||''}" data-f="envoye"></td>
+     <td>${rel?`<span class="due">${rel}</span>`:'<span style="color:#bbb;">—</span>'}</td>
+     <td><input value="${r.notes||''}" data-f="notes" placeholder="notes"></td>
+     <td><button class="rowbtn" title="Supprimer">✕</button></td>`;
+    tr.querySelectorAll('[data-f]').forEach(inp=>inp.addEventListener('change',()=>{
+      r[inp.dataset.f]=inp.value;
+      if(inp.dataset.f==='statut'&&inp.value==='Envoyé'&&!r.envoye){r.envoye=new Date().toISOString().slice(0,10);}
+      renderCRM();renderDash();
+    }));
+    tr.querySelector('.rowbtn').addEventListener('click',()=>{state.crm.splice(i,1);renderCRM();renderDash();});
+    b.appendChild(tr);
+  });
+  if(!state.crm.length){b.innerHTML='<tr><td colspan="8" style="text-align:center;color:#9a9e90;padding:22px;">Aucun contact — clique « + Ajouter un contact ». Commence par 5 cibles B2B (syndics bénévoles, agences, commerces avec terrasse).</td></tr>';}
+}
+function exportCSV(){
+  const head="Nom;Type;Contact;Statut;Envoyé le;Relance J+5;Notes\n";
+  const rows=state.crm.map(r=>[r.nom,r.type,r.contact,r.statut,r.envoye,relanceDate(r.envoye),(r.notes||'').replace(/;/g,',')].join(';')).join('\n');
+  dl('jardin31-prospection.csv',head+rows,'text/csv');toast('CSV exporté ✔');
+}
+
+/* ================= TARIFS ================= */
+function sim(){
+  const p=parseFloat(document.getElementById('simPresta').value)||0;
+  const q=parseFloat(document.getElementById('simQty').value)||0;
+  const e=parseFloat(document.getElementById('simEvac').value)||0;
+  document.getElementById('simTotal').textContent=Math.round(p*q+e)+' €';
+}
+function ci(){
+  const m=parseFloat(document.getElementById('ciMontant').value)||0;
+  const base=Math.min(m,5000),credit=Math.round(base*0.5);
+  document.getElementById('ciCredit').textContent=credit;
+  document.getElementById('ciNet').textContent=(m-credit)+' €';
+}
+['simPresta','simQty','simEvac'].forEach(id=>document.getElementById(id).addEventListener('input',sim));
+document.getElementById('ciMontant').addEventListener('input',ci);
+
+/* ================= DASH ================= */
+function renderDash(){
+  const all=ETAPES.flatMap(e=>e.items),done=all.filter(i=>state.todo[i[0]]).length;
+  const pct=Math.round(done/all.length*100);
+  document.getElementById('globalBar').style.width=pct+'%';
+  document.getElementById('globalPct').textContent=pct+' %';
+  document.getElementById('globalCount').textContent=done+' / '+all.length+' tâches';
+  const contacts=state.crm.filter(r=>r.statut&&r.statut!=='À envoyer').length;
+  const devis=state.crm.filter(r=>['Devis envoyé','Signé ✔'].includes(r.statut)).length;
+  const signes=state.crm.filter(r=>r.statut==='Signé ✔').length;
+  document.getElementById('kContacts').textContent=contacts;
+  document.getElementById('kDevis').textContent=devis;
+  document.getElementById('kSignes').textContent=signes;
+  document.getElementById('kCA').value=state.kpi.ca;
+  const fa=document.getElementById('failAlert');
+  if(contacts>=15&&devis===0){fa.innerHTML='<div class="alert warn">🚨 <b>Signal d\'échec atteint :</b> 15+ contacts sans aucun devis. On avait dit qu\'on ajusterait : reviens vers Claude pour retravailler la zone ou le message.</div>';}
+  else if(signes>0){fa.innerHTML='<div class="alert ok">🎉 <b>'+signes+' client(s) signé(s) !</b> Pense à demander un avis Google après chaque prestation (message D4).</div>';}
+  else fa.innerHTML='';
+  const next=all.filter(i=>!state.todo[i[0]]&&i[2]==='toi').slice(0,3);
+  document.getElementById('nextActions').innerHTML=next.length?next.map((i,n)=>`<div>${n+1}. ${i[1]}</div>`).join(''):'<div>🎉 Tout est fait ! Passe au commercial et aux pubs.</div>';
+}
+function saveKpi(){state.kpi.ca=parseFloat(document.getElementById('kCA').value)||0;}
+
+/* ================= SAUVEGARDE ================= */
+function dl(name,content,type){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href);
+}
+function exportState(){dl('jardin31-sauvegarde.json',JSON.stringify(state,null,1),'application/json');toast('Sauvegarde exportée ✔');}
+function importState(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{state=JSON.parse(r.result);renderAll();toast('Sauvegarde restaurée ✔');}catch(e){toast('Fichier invalide');}};
+  r.readAsText(f);inp.value='';
+}
+function resetState(){
+  if(!confirm('Tout remettre à zéro ?'))return;
+  state={kpi:{ca:0},todo:{},crm:[]};
+  ETAPES.forEach(e=>e.items.forEach(i=>{if(i[2]==='fait')state.todo[i[0]]=true;}));
+  renderAll();toast('Réinitialisé');
+}
+function renderAll(){renderTodo();renderMsgs();renderCRM();renderDash();sim();ci();}
+renderAll();
+</script>
+</body>
+</html>

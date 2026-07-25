@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Station Cocktail 31 — Centre de pilotage</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SC31 Pilotage">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#12100e">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2312100e'/%3E%3Ctext x='50' y='66' font-size='46' text-anchor='middle' fill='%23c8a24a' font-family='Georgia,serif' font-weight='bold'%3E31%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2312100e'/%3E%3Ccircle cx='50' cy='50' r='16' fill='%23c8a24a'/%3E%3C/svg%3E">
+<style>
+:root{
+  --noir:#12100e; --nuit:#1c1a17; --nuit2:#221f1a; --creme:#f3ede2; --or:#c8a24a; --or-clair:#e0c274;
+  --gris:#a49e93; --gris-fonce:#726c60; --bordeaux:#7a2233; --sage:#6f8a63; --hairline:#332e26;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:var(--noir); color:var(--creme); padding-bottom:70px;
+}
+h1,h2,h3,h4{margin:0; font-weight:700;}
+.header{
+  background:linear-gradient(180deg,var(--nuit),var(--noir)); padding:16px 16px 10px;
+  position:sticky; top:0; z-index:20; border-bottom:1px solid var(--hairline);
+  padding-top:calc(16px + env(safe-area-inset-top));
+}
+.header .kicker{font-size:10.5px; letter-spacing:.14em; color:var(--or); font-weight:700; text-transform:uppercase;}
+.header h1{font-family:Georgia,serif; font-size:21px; margin-top:3px; color:var(--creme);}
+.header .sub{font-size:12px; color:var(--gris); margin-top:3px;}
+.tabs{
+  display:flex; overflow-x:auto; gap:2px; position:sticky; top:0; z-index:19;
+  background:var(--nuit); border-bottom:2px solid var(--or); scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar{display:none;}
+.tabs button{
+  flex:0 0 auto; padding:11px 14px; background:none; border:none; color:var(--gris);
+  font-size:13px; font-weight:600; font-family:inherit; white-space:nowrap;
+}
+.tabs button.active{color:var(--or-clair); box-shadow:inset 0 -3px 0 var(--or);}
+main{padding:14px;}
+.section{background:var(--nuit); border-radius:14px; margin-bottom:14px; overflow:hidden; border:1px solid var(--hairline);}
+.section-head{padding:12px 16px; font-size:13px; font-weight:700; letter-spacing:.03em; text-transform:uppercase;
+  border-left:4px solid var(--or); background:var(--nuit2); color:var(--or-clair); font-family:Georgia,serif; font-size:15px;}
+.section-head.bordeaux{border-left-color:var(--bordeaux);}
+.section-head.sage{border-left-color:var(--sage);}
+.section-body{padding:14px 16px 16px;}
+.hero-card{
+  background:radial-gradient(circle at 30% 20%, rgba(200,162,74,.16), transparent 60%), var(--nuit);
+  border:1px solid var(--or); border-radius:16px; padding:20px; margin-bottom:14px; text-align:center;
+}
+.hero-card .label{font-size:10.5px; letter-spacing:.12em; color:var(--or); font-weight:700; text-transform:uppercase;}
+.hero-card .quote{font-family:Georgia,serif; font-size:19px; color:var(--creme); margin:6px 0 10px; font-style:italic;}
+.hero-card .meta{font-size:12px; color:var(--gris); line-height:1.6;}
+.statgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px;}
+.stat{background:var(--nuit); border:1px solid var(--hairline); border-radius:12px; padding:14px 8px; text-align:center;}
+.stat .n{font-family:Georgia,serif; font-size:26px; color:var(--or-clair); font-weight:700;}
+.stat .l{font-size:10.5px; color:var(--gris); text-transform:uppercase; letter-spacing:.05em; margin-top:2px;}
+.progressbar{height:8px; background:var(--noir); border-radius:5px; overflow:hidden; margin:8px 0; border:1px solid var(--hairline);}
+.progressbar .fill{height:100%; background:linear-gradient(90deg,var(--or),var(--or-clair)); transition:width .3s;}
+.check{display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid var(--hairline);}
+.check:last-child{border-bottom:none;}
+.check input{width:19px; height:19px; margin-top:1px; accent-color:var(--or); flex:0 0 auto;}
+.check label{font-size:13.5px; flex:1; line-height:1.4;}
+.check .crit{display:block; font-size:11px; color:var(--gris); margin-top:2px;}
+.check.done label{color:var(--gris-fonce); text-decoration:line-through;}
+.pill{display:inline-block; font-size:10px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;
+  color:var(--noir); background:var(--or); border-radius:6px; padding:3px 9px; margin-bottom:6px;}
+.pill.ghost{background:transparent; border:1px solid var(--or); color:var(--or-clair);}
+.small{font-size:11.5px; color:var(--gris);}
+textarea, input[type=text], input[type=number], select{
+  width:100%; border:1px solid var(--hairline); border-radius:8px; padding:9px 10px;
+  font-family:inherit; font-size:13.5px; background:var(--noir); color:var(--creme); resize:vertical;
+}
+textarea{min-height:60px;}
+textarea::placeholder, input::placeholder{color:var(--gris-fonce);}
+input:focus, textarea:focus, select:focus{outline:none; border-color:var(--or);}
+h4.grp{font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--or); margin:14px 0 6px; opacity:.9;}
+h4.grp:first-of-type{margin-top:2px;}
+button.btn{
+  padding:9px 16px; border:1px solid var(--or); border-radius:8px; background:transparent;
+  color:var(--or-clair); font-size:12.5px; font-weight:700; font-family:inherit; cursor:pointer;
+}
+button.btn.solid{background:var(--or); color:var(--noir); border-color:var(--or);}
+button.btn.small{padding:5px 10px; font-size:11px;}
+button.btn.danger{border-color:var(--bordeaux); color:#e08a8a;}
+.msg-card{background:var(--noir); border:1px solid var(--hairline); border-radius:10px; padding:14px; margin-bottom:12px;}
+.msg-card h4{color:var(--or-clair); font-family:Georgia,serif; font-size:15px; margin-bottom:8px;}
+.msg-card p{font-size:12.5px; color:var(--creme); line-height:1.6; white-space:pre-wrap; margin-bottom:10px;}
+.msg-card .copied{color:var(--sage); font-size:11px; margin-left:8px; opacity:0; transition:opacity .2s;}
+.msg-card .copied.show{opacity:1;}
+table{width:100%; border-collapse:collapse; font-size:12px;}
+table th{background:var(--nuit2); color:var(--or-clair); text-align:left; padding:7px 8px; font-size:10.5px; text-transform:uppercase; letter-spacing:.03em;}
+table td{padding:6px 8px; border-bottom:1px solid var(--hairline); vertical-align:middle;}
+.client-card{background:var(--noir); border:1px solid var(--hairline); border-radius:10px; padding:12px; margin-bottom:10px;}
+.client-card .row2{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;}
+.client-card .rowfull{margin-bottom:8px;}
+.client-card .miniLabel{font-size:10px; color:var(--gris); text-transform:uppercase; letter-spacing:.04em; margin-bottom:3px; display:block;}
+.client-card .topline{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+.statut-badge{font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px; text-transform:uppercase; letter-spacing:.03em;}
+.statut-Prospect{background:#3a3528; color:var(--or-clair);}
+.statut-Devis{background:#2a3a4a; color:#8ab4e0;}
+.statut-Acompte{background:#2a3a2c; color:#8ac490;}
+.statut-Realise{background:var(--or); color:var(--noir);}
+.statut-Annule{background:#3a2222; color:#e08a8a;}
+.target-row{display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--hairline);}
+.target-row:last-child{border-bottom:none;}
+.target-row .tname{flex:1; font-size:13px; font-weight:600;}
+.target-row .tmeta{font-size:11px; color:var(--gris);}
+.target-row select{width:auto; font-size:11px; padding:4px 6px;}
+footer.app-footer{text-align:center; font-size:10.5px; color:var(--gris-fonce); padding:18px 16px 8px;}
+.priolist{margin-bottom:0;}
+.prio-row{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+.prio-row .num{flex:0 0 20px; font-weight:700; color:var(--or); font-family:Georgia,serif;}
+.divider{height:1px; background:var(--hairline); margin:14px 0;}
+a.reslink{color:var(--or-clair); text-decoration:none; font-weight:600;}
+a.reslink:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="kicker">Centre de pilotage</div>
+  <h1>Station Cocktail 31</h1>
+  <div class="sub" id="headerSub">Bar à cocktails mobile · Toulouse & Haute-Garonne</div>
+</div>
+<div class="tabs" id="tabsBar">
+  <button data-tab="dashboard" class="active">Tableau de bord</button>
+  <button data-tab="admin">Administratif</button>
+  <button data-tab="clients">Clients & devis</button>
+  <button data-tab="messages">Messages</button>
+  <button data-tab="partenaires">Partenaires</button>
+  <button data-tab="reseaux">Réseaux</button>
+  <button data-tab="materiel">Matériel & roulotte</button>
+</div>
+
+<main>
+  <div id="view-dashboard"></div>
+  <div id="view-admin" style="display:none"></div>
+  <div id="view-clients" style="display:none"></div>
+  <div id="view-messages" style="display:none"></div>
+  <div id="view-partenaires" style="display:none"></div>
+  <div id="view-reseaux" style="display:none"></div>
+  <div id="view-materiel" style="display:none"></div>
+</main>
+
+<footer class="app-footer">
+  App autonome, à ajouter à l'écran d'accueil (Safari → Partager → Sur l'écran d'accueil).<br>
+  Tout ce que tu coches, écris ou ajoutes est sauvegardé automatiquement sur cet appareil.
+</footer>
+
+<script>
+// ============================================================================
+// STOCKAGE — localStorage, préfixe "SC31:" dédié à cette app.
+// ============================================================================
+const store = (() => {
+  try { localStorage.setItem("__sc31t","1"); localStorage.removeItem("__sc31t"); return localStorage; }
+  catch(e){ const m={}; return {getItem:k=>(k in m?m[k]:null), setItem:(k,v)=>{m[k]=String(v);}, removeItem:k=>{delete m[k];}}; }
+})();
+function gk(k){ return store.getItem("SC31:"+k); }
+function sk(k,v){ store.setItem("SC31:"+k, v); }
+function el(tag,cls,html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!==undefined) e.innerHTML=html; return e; }
+function esc(s){ return (s||"").toString().replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function bindCheck(cb,rowEl,key){
+  const k="SC31:"+key;
+  if(store.getItem(k)==="1"){ cb.checked=true; rowEl.classList.add("done"); }
+  cb.addEventListener("change",()=>{ rowEl.classList.toggle("done",cb.checked); store.setItem(k, cb.checked?"1":"0"); refreshDashboardStats(); });
+}
+function bindText(inputEl,key){
+  const k="SC31:"+key; const saved=store.getItem(k);
+  if(saved!==null) inputEl.value=saved;
+  inputEl.addEventListener("input",()=>store.setItem(k,inputEl.value));
+}
+function noteArea(key,placeholder){ const ta=el("textarea"); ta.placeholder=placeholder||"Notes…"; bindText(ta,key); return ta; }
+function sectionEl(title,accentClass){
+  const box=el("div","section");
+  box.appendChild(el("div","section-head"+(accentClass?(" "+accentClass):""), esc(title)));
+  const body=el("div","section-body"); box.appendChild(body);
+  return {box, body};
+}
+function copyToClipboard(text, btn){
+  const done = () => {
+    const span = btn.parentElement.querySelector(".copied");
+    if(span){ span.classList.add("show"); setTimeout(()=>span.classList.remove("show"), 1600); }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text,done));
+  } else { fallbackCopy(text,done); }
+}
+function fallbackCopy(text, cb){
+  const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); cb(); }catch(e){}
+  document.body.removeChild(ta);
+}
+
+// ============================================================================
+// DONNÉES DE RÉFÉRENCE
+// ============================================================================
+const ADMIN_TASKS = [
+  ["A. Administratif", [
+    ["Créer stationcocktail31@gmail.com", "5 min — tu reçois des mails dessus."],
+    ["Immatriculer la micro-entreprise + demander l'ACRE en même temps", "SIRET reçu → à reporter dans site, CGV art. 1, devis. Le taux ACRE baisse chaque mois qui passe, ne traîne pas."],
+    ["Souscrire une RC Pro événementielle", "Attestation PDF en main avant le 1er événement — non négociable."],
+    ["Déclarer l'usage professionnel du véhicule à l'assureur auto", "Avenant reçu — un usage pro non déclaré peut annuler la couverture en cas de sinistre."],
+    ["Carte de commerçant ambulant (CCI, Cerfa 14022*02, 30€, 4 ans)", "Carte reçue — zone grise juridique, mais à 30€ on la prend plutôt que débattre."],
+    ["Désigner un médiateur de la consommation (obligation légale)", "Nom du médiateur reporté dans les CGV art. 10 — ex. CM2C, Médiation-conso."],
+    ["Choisir une plateforme de facturation électronique (Abby, Pennylane…)", "Compte créé, SIRET rattaché — obligation de réception dès le 1er sept. 2026."],
+  ]],
+  ["B. Mise en ligne", [
+    ["Acheter le domaine + héberger le site", "Le site s'affiche à l'adresse stationcocktail31.fr (ou équivalent)."],
+    ["Activer FormSubmit (test + confirmation email)", "Le mail de test arrive dans ta boîte."],
+    ["Obtenir un numéro de téléphone pro", "Voir l'onglet Réseaux → section Téléphone pro pour les options."],
+    ["Compléter la ligne « Hébergeur » des mentions légales", "Fait dans le site une fois l'hébergeur choisi."],
+  ]],
+  ["C. Comptes et visibilité", [
+    ["Créer Instagram + TikTok @stationcocktail31", "Comptes créés, 3 premiers posts publiés (bios prêtes dans l'onglet Réseaux)."],
+    ["Créer la fiche Google Business Profile (zone de service)", "Fiche validée par Google — voir pas-à-pas dans Réseaux."],
+    ["Créer la fiche mariages.net", "Fiche en ligne, gratuite."],
+  ]],
+  ["D. Matériel et images", [
+    ["Rassembler le matériel (roulotte, verrerie, mixologie…)", "Un événement de 70 invités est tenable — voir onglet Matériel."],
+    ["Shooting photo/vidéo (roulotte, cocktails, setup)", "Galerie du site remplie — même chez toi en attendant le 1er événement."],
+  ]],
+  ["E. Lancement", [
+    ["Envoyer les 9 emails « salles cercle 1 »", "9 lignes passées à « Contacté » dans l'onglet Partenaires."],
+    ["Publier l'offre de lancement (−20 % sur 3 dates)", "Post publié sur Instagram/TikTok."],
+    ["Caler le 1er événement filmé à −20 %", "Acompte reçu = le projet devient réel."],
+  ]],
+];
+
+const CLIENT_STATUTS = ["Prospect","Devis envoyé","Acompte reçu","Réalisé","Annulé"];
+function statutClass(s){
+  return {"Prospect":"statut-Prospect","Devis envoyé":"statut-Devis","Acompte reçu":"statut-Acompte","Réalisé":"statut-Realise","Annulé":"statut-Annule"}[s] || "statut-Prospect";
+}
+
+const MESSAGES = [
+  {titre:"Réponse à une première demande", texte:"Bonjour [Prénom], merci pour votre message ! Je serais ravi d'animer le bar de votre [événement] le [date]. Pour vous proposer un devis précis sous 48h : nombre d'invités, lieu, et durée souhaitée ? À très vite !"},
+  {titre:"Relance devis non signé (J+5)", texte:"Bonjour [Prénom], je reviens vers vous concernant le devis envoyé le [date] pour votre événement du [date événement]. Les dates partent vite en haute saison — souhaitez-vous que je vous garde un créneau, ou avez-vous des questions sur la proposition ?"},
+  {titre:"Confirmation après acompte reçu", texte:"Bonjour [Prénom], c'est confirmé, votre acompte est bien reçu ! Votre date du [date] est réservée. Je reviendrai vers vous à l'approche de l'événement pour finaliser les détails pratiques (accès, horaires, liste de courses alcool). Merci de votre confiance !"},
+  {titre:"Demande d'avis (J+1 après l'événement)", texte:"Merci encore pour hier [Prénom], c'était top ! Si vous avez 2 minutes, un avis Google m'aiderait énormément à me lancer : [lien fiche Google]. Et envoyez-moi vos plus belles photos de la soirée si vous en avez !"},
+  {titre:"Email partenariat — salle de réception", texte:"Objet : Un bar à cocktails mobile à recommander à vos mariés ?\n\nBonjour,\nJe suis Vincent, fondateur de Station Cocktail 31, bar à cocktails mobile basé à Seysses — à quelques minutes de chez vous.\nJe me déplace avec une roulotte, un barman et tout le matériel pour animer le vin d'honneur ou la soirée des mariages ; vos clients fournissent uniquement les bouteilles, je m'occupe de tout le reste.\nJe vous propose : un tarif préférentiel de −10 % pour vos clients, et une démonstration gratuite de 30 minutes sur votre domaine pour votre équipe.\nSeriez-vous disponible pour un échange de 15 minutes la semaine prochaine ?\nBien cordialement,\nVincent Ferry — Station Cocktail 31\nstationcocktail31@gmail.com"},
+  {titre:"Email partenariat — wedding planner", texte:"Objet : Nouveau prestataire bar à cocktails — Toulouse & 31\n\nBonjour [Prénom],\nJe lance Station Cocktail 31, bar à cocktails mobile (roulotte + barman) sur Toulouse et la Haute-Garonne, et je constitue mon réseau de wedding planners.\nFormules claires (450 à 1200€), mocktails inclus, liste de courses alcool calculée pour vos clients, et −10 % pour toute recommandation venant de vous.\nMes 3 premières dates sont à −20 % — l'occasion idéale de me tester avec un risque minimal.\nBien cordialement,\nVincent"},
+  {titre:"Post d'annonce — offre de lancement", texte:"🚨 OFFRE DE LANCEMENT 🚨\nStation Cocktail 31 démarre : les 3 premières dates réservées bénéficient de −20 % sur toute la prestation.\nEn échange ? Un avis Google honnête et le droit d'utiliser quelques images de votre soirée.\n🍸 Bar mobile + barman + tout le matériel — vous ne vous occupez de rien.\n📅 Réservation : lien en bio. Code « OFFRE LANCEMENT »."},
+];
+
+const PARTENAIRES_SEED = [
+  ["Île de Tara","Salle","Muret",1],["Le Miroir des Lys","Salle","Muret",1],
+  ["L'Orangerie des Demoiselles","Salle","Frouzins",1],["Manoir du Prince","Salle","Portet-sur-Garonne",1],
+  ["Domaine des Barrots","Salle","Sud Toulouse",1],["Château Lamothe","Salle","Sud Toulouse",1],
+  ["Château de Puydaniel","Salle","Puydaniel",1],["Domaine de Quintalone","Salle","Cintegabelle",1],
+  ["Domaine de Montjoie","Salle","Ramonville-St-Agne",1],
+  ["Domaine de Rochemontès","Salle","Seilh",2],["Le Domaine du T","Salle","Balma",2],
+  ["Château Latournelle","Salle","Fenouillet",2],["L'Orangerie de Neuville","Salle","~15 km Toulouse",2],
+  ["Château de Merville","Salle","Merville",2],["Vignoble Cassin","Salle","Fronton",2],
+  ["Brins d'Ivresse","Wedding planner","Toulouse",1],["My Event by Jenny","Wedding planner","Toulouse",1],
+  ["Les Prémices de M","Wedding planner","Toulouse",2],
+  ["Délice Events","Traiteur","Toulouse",2],["La Brigade Traiteur","Traiteur","Toulouse",2],["David Pessant","Traiteur","Toulouse",2],
+];
+const PART_STATUTS = ["À contacter","Contacté","Relancé","RDV","Partenaire","Refus"];
+
+const MATERIEL_LIST = [
+  ["Roulotte / chariot de bar", "Voir onglet Matériel → section Roulotte pour les options."],
+  ["Verrerie (verres à cocktail, tumblers)", "En quantité suffisante pour le plus grand format vendu (100 invités)."],
+  ["Shaker, jiggers, piluliers, presse-agrumes, planche à découper", ""],
+  ["Glacière(s) de transport + approvisionnement glace jour J", ""],
+  ["Ingrédients non alcoolisés (jus, sirops, garnitures)", ""],
+  ["Nappage/déco du chariot, éclairage d'ambiance", ""],
+  ["Tenue professionnelle de service", ""],
+];
+
+// ============================================================================
+// DASHBOARD
+// ============================================================================
+function countAdminDone(){
+  let done=0, total=0;
+  ADMIN_TASKS.forEach(([g,items])=>items.forEach((it,i)=>{ total++; if(gk("admin:"+g+":"+i)==="1") done++; }));
+  return {done, total};
+}
+function getClients(){ try{ return JSON.parse(gk("clients")||"[]"); }catch(e){ return []; } }
+function refreshDashboardStats(){
+  const a = document.getElementById("statAdmin");
+  const c = document.getElementById("statClients");
+  const p = document.getElementById("statPartenaires");
+  if(a){ const {done,total}=countAdminDone(); a.textContent = done+"/"+total; }
+  if(c){ c.textContent = getClients().length; }
+  if(p){ const st = JSON.parse(gk("partenaires:statuts")||"{}"); const n = Object.values(st).filter(v=>v && v!=="À contacter").length; p.textContent = n+"/"+PARTENAIRES_SEED.length; }
+  const bar = document.getElementById("adminProgFill");
+  if(bar){ const {done,total}=countAdminDone(); bar.style.width = Math.round(done/total*100)+"%"; }
+}
+
+function renderDashboard(){
+  const view = document.getElementById("view-dashboard");
+  view.innerHTML = "";
+
+  const hero = el("div","hero-card");
+  hero.innerHTML = `
+    <div class="label">Règle du projet</div>
+    <div class="quote">« LISSO et JARDIN 31 paient. Station Cocktail 31 se prépare. »</div>
+    <div class="meta">Jalon n°1 : décrocher le premier événement filmé (offre de lancement −20 %).<br>Une tâche de la checklist administrative par semaine — pas plus tant que le jalon n'est pas atteint.</div>`;
+  view.appendChild(hero);
+
+  const grid = el("div","statgrid");
+  grid.innerHTML = `
+    <div class="stat"><div class="n" id="statAdmin">0/0</div><div class="l">Tâches admin</div></div>
+    <div class="stat"><div class="n" id="statClients">0</div><div class="l">Clients / devis</div></div>
+    <div class="stat"><div class="n" id="statPartenaires">0/${PARTENAIRES_SEED.length}</div><div class="l">Partenaires activés</div></div>`;
+  view.appendChild(grid);
+
+  let s = sectionEl("Progression administrative");
+  const bar = el("div","progressbar"); bar.innerHTML = `<div class="fill" id="adminProgFill" style="width:0%"></div>`;
+  s.body.appendChild(bar);
+  s.body.appendChild(el("div","small","Détail des 19 tâches dans l'onglet Administratif."));
+  view.appendChild(s.box);
+
+  s = sectionEl("Jalon — 1er événement", "bordeaux");
+  const jalonRow = el("div","check");
+  const cb = el("input"); cb.type="checkbox"; cb.id="jalon1";
+  const lb = el("label", null, "<b>1er événement réalisé et filmé</b><span class=\"crit\">Dès que coché : le statut du projet passe de « préparation » à « actif ».</span>");
+  lb.htmlFor = cb.id;
+  jalonRow.appendChild(cb); jalonRow.appendChild(lb);
+  bindCheck(cb, jalonRow, "jalon1");
+  s.body.appendChild(jalonRow);
+  view.appendChild(s.box);
+
+  s = sectionEl("Priorité de la semaine");
+  for(let i=1;i<=3;i++){
+    const pr = el("div","prio-row");
+    pr.innerHTML = `<span class="num">${i}.</span>`;
+    const inp = el("input"); inp.type="text"; inp.placeholder="…";
+    bindText(inp, "semaine:action"+i);
+    pr.appendChild(inp);
+    s.body.appendChild(pr);
+  }
+  view.appendChild(s.box);
+
+  s = sectionEl("Fichiers livrés — pense-bête");
+  s.body.appendChild(el("div","small",
+    "<b>Site :</b> Station_Cocktail_31_Site_FINAL.html · <b>CGV :</b> CGV_Contrat_FINAL.docx · <b>Devis :</b> Devis_Template_FINAL.docx · " +
+    "<b>Calculateur :</b> Calculateur_FINAL.xlsx (marges, seuil, liste courses alcool, prospection) · <b>Kits :</b> Kit_Communication.docx, Kit_Partenariats.docx · " +
+    "<b>Checklist :</b> TES_TACHES.md — tous dans ton dossier « STATION COCKTAIL 31 »."));
+  view.appendChild(s.box);
+
+  refreshDashboardStats();
+}
+
+// ============================================================================
+// ADMINISTRATIF
+// ============================================================================
+function renderAdmin(){
+  const view = document.getElementById("view-admin");
+  view.innerHTML = "";
+  const bar = el("div","progressbar"); bar.style.margin="0 0 14px";
+  bar.innerHTML = `<div class="fill" id="adminProgFill2" style="width:0%"></div>`;
+  view.appendChild(bar);
+
+  ADMIN_TASKS.forEach(([groupTitle, items]) => {
+    const s = sectionEl(groupTitle);
+    items.forEach(([task, crit], i) => {
+      const c = el("div","check");
+      const cb = el("input"); cb.type="checkbox"; cb.id="adm"+groupTitle+i;
+      const lb = el("label", null, `<b>${esc(task)}</b>${crit?`<span class="crit">${esc(crit)}</span>`:""}`);
+      lb.htmlFor = cb.id;
+      c.appendChild(cb); c.appendChild(lb);
+      bindCheck(cb, c, "admin:"+groupTitle+":"+i);
+      s.body.appendChild(c);
+    });
+    view.appendChild(s.box);
+  });
+
+  const {done,total} = countAdminDone();
+  document.getElementById("adminProgFill2").style.width = Math.round(done/total*100)+"%";
+  const s2 = sectionEl("Notes administratif");
+  s2.body.appendChild(noteArea("admin:notes","SIRET, dates de dépôt, numéros de dossier…"));
+  view.appendChild(s2.box);
+}
+
+// ============================================================================
+// CLIENTS & DEVIS — mini-CRM local
+// ============================================================================
+function saveClients(list){ sk("clients", JSON.stringify(list)); refreshDashboardStats(); }
+function renderClients(){
+  const view = document.getElementById("view-clients");
+  view.innerHTML = "";
+
+  const s = sectionEl("Ajouter un client / prospect");
+  const form = el("div");
+  const row1 = el("div","client-card__form");
+  const fNom = el("input"); fNom.type="text"; fNom.placeholder="Nom (ex. Julie & Marc)";
+  const fEvt = el("input"); fEvt.type="text"; fEvt.placeholder="Type d'événement";
+  const fDate = el("input"); fDate.type="text"; fDate.placeholder="Date événement (jj/mm/aaaa)";
+  const fInv = el("input"); fInv.type="number"; fInv.placeholder="Nb invités";
+  const fMontant = el("input"); fMontant.type="number"; fMontant.placeholder="Montant devis (€)";
+  [fNom,fEvt,fDate,fInv,fMontant].forEach(i=>{ i.style.marginBottom="8px"; form.appendChild(i); });
+  const addBtn = el("button","btn solid","+ Ajouter à la liste");
+  addBtn.addEventListener("click", () => {
+    if(!fNom.value.trim()) { fNom.focus(); return; }
+    const list = getClients();
+    list.unshift({id:Date.now()+Math.random(), nom:fNom.value.trim(), evt:fEvt.value.trim(), date:fDate.value.trim(),
+      invites:fInv.value, montant:fMontant.value, statut:"Prospect", notes:""});
+    saveClients(list);
+    fNom.value=""; fEvt.value=""; fDate.value=""; fInv.value=""; fMontant.value="";
+    renderClientsList();
+  });
+  form.appendChild(addBtn);
+  s.body.appendChild(form);
+  view.appendChild(s.box);
+
+  const listSection = sectionEl("Liste des clients / prospects");
+  listSection.box.id = "clientsListSection";
+  view.appendChild(listSection.box);
+  renderClientsList();
+}
+function renderClientsList(){
+  const box = document.getElementById("clientsListSection");
+  if(!box) return;
+  const body = box.querySelector(".section-body");
+  body.innerHTML = "";
+  const list = getClients();
+  if(!list.length){
+    body.appendChild(el("div","small","Aucun client pour l'instant — ajoute ta première demande ci-dessus."));
+    return;
+  }
+  list.forEach(client => {
+    const card = el("div","client-card");
+    const top = el("div","topline");
+    const nameEl = el("div", null, `<b>${esc(client.nom)}</b>`); nameEl.style.fontSize="14px";
+    const badge = el("span","statut-badge "+statutClass(client.statut)); badge.textContent = client.statut;
+    top.appendChild(nameEl); top.appendChild(badge);
+    card.appendChild(top);
+
+    const row2 = el("div","row2");
+    const c1 = el("div"); c1.innerHTML = `<span class="miniLabel">Événement</span>`;
+    const evtInp = el("input"); evtInp.type="text"; evtInp.value=client.evt||""; evtInp.placeholder="Type";
+    evtInp.addEventListener("input",()=>{ client.evt=evtInp.value; saveClients(list); });
+    c1.appendChild(evtInp);
+    const c2 = el("div"); c2.innerHTML = `<span class="miniLabel">Date événement</span>`;
+    const dateInp = el("input"); dateInp.type="text"; dateInp.value=client.date||""; dateInp.placeholder="jj/mm/aaaa";
+    dateInp.addEventListener("input",()=>{ client.date=dateInp.value; saveClients(list); });
+    c2.appendChild(dateInp);
+    row2.appendChild(c1); row2.appendChild(c2);
+    card.appendChild(row2);
+
+    const row3 = el("div","row2");
+    const c3 = el("div"); c3.innerHTML = `<span class="miniLabel">Invités</span>`;
+    const invInp = el("input"); invInp.type="number"; invInp.value=client.invites||""; invInp.placeholder="Nb";
+    invInp.addEventListener("input",()=>{ client.invites=invInp.value; saveClients(list); });
+    c3.appendChild(invInp);
+    const c4 = el("div"); c4.innerHTML = `<span class="miniLabel">Montant devis (€)</span>`;
+    const monInp = el("input"); monInp.type="number"; monInp.value=client.montant||""; monInp.placeholder="€";
+    monInp.addEventListener("input",()=>{ client.montant=monInp.value; saveClients(list); });
+    c4.appendChild(monInp);
+    row3.appendChild(c3); row3.appendChild(c4);
+    card.appendChild(row3);
+
+    const c5 = el("div","rowfull"); c5.innerHTML = `<span class="miniLabel">Statut</span>`;
+    const selStatut = el("select");
+    CLIENT_STATUTS.forEach(st => { const o=el("option"); o.value=st; o.textContent=st; if(st===client.statut) o.selected=true; selStatut.appendChild(o); });
+    selStatut.addEventListener("change",()=>{ client.statut=selStatut.value; saveClients(list); renderClientsList(); });
+    c5.appendChild(selStatut);
+    card.appendChild(c5);
+
+    const c6 = el("div","rowfull"); c6.innerHTML = `<span class="miniLabel">Notes</span>`;
+    const notesTa = el("textarea"); notesTa.value = client.notes||""; notesTa.placeholder="Détails, préférences, suivi…";
+    notesTa.style.minHeight="44px";
+    notesTa.addEventListener("input",()=>{ client.notes=notesTa.value; saveClients(list); });
+    c6.appendChild(notesTa);
+    card.appendChild(c6);
+
+    const delBtn = el("button","btn danger small","Supprimer");
+    delBtn.style.marginTop="6px";
+    delBtn.addEventListener("click", () => {
+      if(!confirm("Supprimer "+client.nom+" ?")) return;
+      const idx = list.findIndex(x=>x.id===client.id);
+      if(idx>-1) list.splice(idx,1);
+      saveClients(list);
+      renderClientsList();
+    });
+    card.appendChild(delBtn);
+
+    box.querySelector(".section-body").appendChild(card);
+  });
+}
+
+// ============================================================================
+// MESSAGES AUTOMATIQUES
+// ============================================================================
+function renderMessages(){
+  const view = document.getElementById("view-messages");
+  view.innerHTML = "";
+  const intro = el("div","small","Modèles prêts à copier-coller. Remplace les champs entre crochets avant l'envoi.");
+  intro.style.marginBottom = "12px";
+  view.appendChild(intro);
+
+  MESSAGES.forEach((m, i) => {
+    const card = el("div","msg-card");
+    const h = el("h4", null, esc(m.titre));
+    card.appendChild(h);
+    const p = el("p", null, esc(m.texte));
+    card.appendChild(p);
+    const btnRow = el("div");
+    const btn = el("button","btn small","Copier");
+    const copied = el("span","copied","Copié !");
+    btn.addEventListener("click", () => copyToClipboard(m.texte, btn));
+    btnRow.appendChild(btn); btnRow.appendChild(copied);
+    card.appendChild(btnRow);
+    view.appendChild(card);
+  });
+
+  const s = sectionEl("Mes propres modèles");
+  s.body.appendChild(noteArea("messages:custom","Ajoute ici tes propres formulations qui fonctionnent bien…"));
+  view.appendChild(s.box);
+}
+
+// ============================================================================
+// PARTENAIRES
+// ============================================================================
+function getPartStatuts(){ try{ return JSON.parse(gk("partenaires:statuts")||"{}"); }catch(e){ return {}; } }
+function renderPartenaires(){
+  const view = document.getElementById("view-partenaires");
+  view.innerHTML = "";
+  const intro = el("div","small","Cibles réelles (sud Toulouse en priorité 1). Vérifie chaque coordonnée avant l'envoi — mets à jour le statut au fil des contacts.");
+  intro.style.marginBottom = "12px";
+  view.appendChild(intro);
+
+  const statuts = getPartStatuts();
+  const byType = {};
+  PARTENAIRES_SEED.forEach((t) => { (byType[t[1]] = byType[t[1]]||[]).push(t); });
+
+  Object.entries(byType).forEach(([type, rows]) => {
+    const s = sectionEl(type + "s", type==="Salle" ? "" : "sage");
+    rows.sort((a,b)=>a[3]-b[3]).forEach(([nom, typ, commune, prio]) => {
+      const row = el("div","target-row");
+      const info = el("div", null); info.style.flex="1";
+      info.innerHTML = `<div class="tname">${esc(nom)} ${prio===1?'<span class="pill ghost" style="margin-left:4px;font-size:9px;">P1</span>':''}</div><div class="tmeta">${esc(commune)}</div>`;
+      const sel = el("select");
+      PART_STATUTS.forEach(st => { const o=el("option"); o.value=st; o.textContent=st; if((statuts[nom]||"À contacter")===st) o.selected=true; sel.appendChild(o); });
+      sel.addEventListener("change", () => { statuts[nom]=sel.value; sk("partenaires:statuts", JSON.stringify(statuts)); refreshDashboardStats(); });
+      row.appendChild(info); row.appendChild(sel);
+      s.body.appendChild(row);
+    });
+    view.appendChild(s.box);
+  });
+
+  const s2 = sectionEl("Notes prospection");
+  s2.body.appendChild(noteArea("partenaires:notes","Nouvelles cibles trouvées, retours de contact…"));
+  view.appendChild(s2.box);
+}
+
+// ============================================================================
+// RÉSEAUX & LANCEMENT
+// ============================================================================
+function renderReseaux(){
+  const view = document.getElementById("view-reseaux");
+  view.innerHTML = "";
+
+  let s = sectionEl("Offre de lancement");
+  s.body.innerHTML = `<p style="font-size:13px;line-height:1.6;margin:0 0 8px;"><b>−20 % sur les 3 premières dates réservées</b>, en échange d'un avis Google détaillé et de l'autorisation d'utiliser des photos/vidéos de l'événement (déjà intégré aux CGV art. 8 et au devis).</p>
+    <div class="small">Règle : strictement 3 dates, puis on arrête — la rareté doit rester réelle. Objectif : 3 avis Google + un portfolio complet en moins de 2 mois.</div>`;
+  view.appendChild(s.box);
+
+  s = sectionEl("Comptes à créer — identité");
+  s.body.innerHTML = `<div class="small" style="margin-bottom:10px;"><b>Nom partout :</b> Station Cocktail 31 · <b>Pseudo :</b> @stationcocktail31 (repli : @station.cocktail31)</div>`;
+  const bioIg = el("div","msg-card");
+  bioIg.innerHTML = `<h4>Bio Instagram</h4><p>🍸 Bar à cocktails mobile · Toulouse & 31\n🚐 La roulotte vient à vous — mariages, anniversaires, EVJF, entreprises\n📅 Sur réservation uniquement\n👇 Demandez votre date</p>`;
+  const btnIg = el("button","btn small","Copier"); const copIg = el("span","copied","Copié !");
+  btnIg.addEventListener("click",()=>copyToClipboard("🍸 Bar à cocktails mobile · Toulouse & 31\n🚐 La roulotte vient à vous — mariages, anniversaires, EVJF, entreprises\n📅 Sur réservation uniquement\n👇 Demandez votre date", btnIg));
+  bioIg.appendChild(btnIg); bioIg.appendChild(copIg);
+  s.body.appendChild(bioIg);
+  const bioTk = el("div","msg-card");
+  bioTk.innerHTML = `<h4>Bio TikTok</h4><p>Barman mobile 🍸 Ta soirée, ton jardin, mon bar.\nToulouse & Haute-Garonne · sur réservation\n📩 lien ↓</p>`;
+  const btnTk = el("button","btn small","Copier"); const copTk = el("span","copied","Copié !");
+  btnTk.addEventListener("click",()=>copyToClipboard("Barman mobile 🍸 Ta soirée, ton jardin, mon bar.\nToulouse & Haute-Garonne · sur réservation\n📩 lien ↓", btnTk));
+  bioTk.appendChild(btnTk); bioTk.appendChild(copTk);
+  s.body.appendChild(bioTk);
+  view.appendChild(s.box);
+
+  s = sectionEl("Google Business Profile — pas à pas");
+  const steps = [
+    "business.google.com → Créer une fiche « Station Cocktail 31 ».",
+    "Type : « zone de service » (PAS d'adresse publique — ton adresse reste privée).",
+    "Catégorie principale : « Service de restauration événementielle » ; secondaire : « Bar ».",
+    "Zone de service : Toulouse, Muret, Seysses, Portet-sur-Garonne, Colomiers, Blagnac + Haute-Garonne.",
+    "Horaires : « Sur rendez-vous ». Lien : le site. Téléphone : ton numéro pro.",
+    "Ajouter 5+ photos dès que possible (roulotte, cocktails, setup).",
+  ];
+  steps.forEach((txt,i) => {
+    const c = el("div","check");
+    const cb = el("input"); cb.type="checkbox"; cb.id="gbp"+i;
+    const lb = el("label", null, esc(txt)); lb.htmlFor = cb.id;
+    c.appendChild(cb); c.appendChild(lb);
+    bindCheck(cb, c, "gbp:"+i);
+    s.body.appendChild(c);
+  });
+  view.appendChild(s.box);
+
+  s = sectionEl("Téléphone professionnel — comment faire", "bordeaux");
+  s.body.innerHTML = `
+    <p class="small" style="margin-bottom:10px;">Aucune obligation légale d'avoir une ligne séparée en micro-entreprise — mais recommandé pour l'image et pour ne pas mélanger perso/pro. Trois options, de la plus simple à la plus complète :</p>`;
+  const opts = [
+    ["Numéro virtuel sur ton smartphone actuel (recommandé pour démarrer)", "Apps type Onoff : un second numéro sur ton téléphone actuel, sans carte SIM supplémentaire, ~15€/mois (offre « Connect »). Actif en quelques minutes, aucun matériel à acheter."],
+    ["Seconde carte SIM physique dédiée", "Forfait prépayé ou low-cost (Free, Prixtel…) sur un vieux téléphone ou en dual-SIM. Environ 2 à 10€/mois selon l'opérateur — solution la plus économique si tu as déjà un téléphone de rechange."],
+    ["Ligne virtuelle professionnelle complète (au-delà du démarrage)", "Solutions type standard virtuel (09 ou 01-05) avec répondeur, transfert d'appels, statistiques — 15 à 50€/mois. À envisager plus tard si le volume d'appels le justifie, pas au lancement."],
+  ];
+  opts.forEach(([title, detail]) => {
+    const c = el("div","check"); c.style.borderBottom = "1px solid var(--hairline)";
+    c.innerHTML = `<div style="flex:1;"><b style="font-size:13px;">${esc(title)}</b><span class="crit">${esc(detail)}</span></div>`;
+    s.body.appendChild(c);
+  });
+  s.body.appendChild(el("div","small","Recommandation pour démarrer : l'option 1 (numéro virtuel type Onoff) — opérationnelle immédiatement, aucun engagement long, facile à migrer plus tard."));
+  view.appendChild(s.box);
+
+  s = sectionEl("10 idées vidéos — rappel");
+  const ideas = ["① Timelapse d'installation","② POV cocktail","③ Vous vs Nous (ce que le client fournit vs ce qu'on apporte)",
+    "④ La liste de courses (réassurance sur le modèle client fournit l'alcool)","⑤ Avant / Après","⑥ La recette en 15 secondes",
+    "⑦ La transparence prix","⑧ Les coulisses de la veille","⑨ La réaction des invités","⑩ Le mocktail bar"];
+  s.body.innerHTML = ideas.map(t=>`<div class="small" style="padding:3px 0">• ${esc(t)}</div>`).join("");
+  s.body.appendChild(el("div","small","Scripts complets (hook / déroulé / CTA) dans Kit_Communication.docx."));
+  view.appendChild(s.box);
+}
+
+// ============================================================================
+// MATÉRIEL & ROULOTTE
+// ============================================================================
+function renderMateriel(){
+  const view = document.getElementById("view-materiel");
+  view.innerHTML = "";
+
+  let s = sectionEl("Checklist matériel");
+  MATERIEL_LIST.forEach(([item, note], i) => {
+    const c = el("div","check");
+    const cb = el("input"); cb.type="checkbox"; cb.id="mat"+i;
+    const lb = el("label", null, `<b>${esc(item)}</b>${note?`<span class="crit">${esc(note)}</span>`:""}`);
+    lb.htmlFor = cb.id;
+    c.appendChild(cb); c.appendChild(lb);
+    bindCheck(cb, c, "materiel:"+i);
+    s.body.appendChild(c);
+  });
+  view.appendChild(s.box);
+
+  s = sectionEl("La roulotte — 3 options concrètes", "bordeaux");
+  s.body.innerHTML = `<p class="small" style="margin-bottom:10px;">C'est la pièce maîtresse visuelle de la marque — noir/or, cohérente avec le site. Trois façons d'y arriver, du plus rapide au plus qualitatif :</p>`;
+  const routes = [
+    ["Fabricant spécialisé (le plus fiable pour démarrer vite)", "Des ateliers français fabriquent des chariots/bars mobiles sur mesure : couleurs RAL ou personnalisées, logo, ouvertures pour ton matériel, montage sans outil en moins de 10 min. Gammes à partir d'environ 1 700 à 1 900€ HT hors options ; devis sous 24h en général. Décris ton projet (dimensions, couleur noir mat + touches or, logo SC31) et compare 2-3 devis avant de choisir."],
+    ["Occasion / reconditionné", "Marché de la seconde main événementiel (Le Bon Coin, groupes Facebook « matériel bar mobile / food truck »). Moins cher, mais vérifie l'état, les dimensions et la solidité de la structure avant d'acheter — un relooking (peinture noir mat + filet or) coûte peu et peut suffire à l'accorder à ta charte."],
+    ["Fabrication maison / artisan local", "Si tu as un bricoleur dans ton réseau : structure en bois/métal sur une base de chariot ou de remorque légère, habillage noir mat + touches or (peinture, vinyle découpé pour le logo). Le moins cher mais le plus chronophage — à réserver si tu as le temps avant ta première date."],
+  ];
+  routes.forEach(([title, detail]) => {
+    const c = el("div","check"); c.style.borderBottom = "1px solid var(--hairline)";
+    c.innerHTML = `<div style="flex:1;"><b style="font-size:13px;">${esc(title)}</b><span class="crit">${esc(detail)}</span></div>`;
+    s.body.appendChild(c);
+  });
+  s.body.appendChild(el("div","small","Cahier des charges à envoyer aux fabricants : dimensions cibles (transportable seul ou à deux dans ton véhicule), noir mat + or (RAL à préciser), zone de préparation + zone de service visible, espace de rangement fermé pour la verrerie, roulettes verrouillables."));
+  view.appendChild(s.box);
+
+  s = sectionEl("Cahier des charges design — à remplir");
+  const fields = [
+    ["Dimensions max (transport)", "roulotte:dim"],
+    ["Budget cible", "roulotte:budget"],
+    ["Couleur / finition (RAL, matière)", "roulotte:couleur"],
+    ["Options souhaitées (parasol, éclairage, étagères…)", "roulotte:options"],
+  ];
+  fields.forEach(([label, key]) => {
+    const wrap = el("div"); wrap.style.marginBottom="10px";
+    wrap.appendChild(el("span","small", esc(label)));
+    const inp = el("input"); inp.type="text"; inp.style.marginTop="4px";
+    bindText(inp, key);
+    wrap.appendChild(inp);
+    s.body.appendChild(wrap);
+  });
+  view.appendChild(s.box);
+
+  s = sectionEl("Notes matériel");
+  s.body.appendChild(noteArea("materiel:notes","Devis reçus, fournisseurs contactés, décisions…"));
+  view.appendChild(s.box);
+}
+
+// ============================================================================
+// NAVIGATION
+// ============================================================================
+const TAB_IDS = ["dashboard","admin","clients","messages","partenaires","reseaux","materiel"];
+const RENDERERS = {dashboard:renderDashboard, admin:renderAdmin, clients:renderClients, messages:renderMessages, partenaires:renderPartenaires, reseaux:renderReseaux, materiel:renderMateriel};
+document.querySelectorAll("#tabsBar button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll("#tabsBar button").forEach(b => b.classList.toggle("active", b===btn));
+    TAB_IDS.forEach(id => { document.getElementById("view-"+id).style.display = (id===tab) ? "" : "none"; });
+  });
+});
+
+TAB_IDS.forEach(id => RENDERERS[id]());
+</script>
+</body>
+</html>
